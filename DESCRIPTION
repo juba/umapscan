@@ -1,0 +1,17 @@
+Package: umapscan
+Type: Package
+Title: UMAP and DBSCAN Pragmatic and Supervised clustering
+Date: 2019-12-01
+Version: 0.0.1
+Authors@R: c(person("Julien", "Barnier", email="julien.barnier@ens-lyon.fr",
+    role=c("aut","cre")))
+Maintainer: Julien Barnier <julien.barnier@ens-lyon.fr>
+Description: Set of tools for dataset exploration using UMAP
+  embeddings and DBSCAN iterative clustering.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+URL: https://github.com/juba/rmdformats
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
