@@ -4,10 +4,13 @@
 \alias{compute_clusters}
 \title{Compute DBSCAN clusters from a umapscan object}
 \usage{
-compute_clusters(us, eps, minPts, graph = TRUE, alpha = 0.5)
+compute_clusters(us, parent, eps, minPts, graph = TRUE, alpha = 1,
+  ellipses = TRUE)
 }
 \arguments{
 \item{us}{umapscan object}
+
+\item{parent}{name of the parent cluster}
 
 \item{eps}{\code{eps} argument passed to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}}
 
@@ -16,6 +19,8 @@ compute_clusters(us, eps, minPts, graph = TRUE, alpha = 0.5)
 \item{graph}{if TRUE, display a plot of the computed clusters}
 
 \item{alpha}{point transparency for clusters plot}
+
+\item{ellipses}{if TRUE, plot confidence ellipses around clusters}
 }
 \value{
 Returns an updated \code{umapscan} object, and optionally displays a clusters plot.
@@ -27,11 +32,12 @@ are taken into account.
 }
 \examples{
 iris_num <- iris \%>\% select_if(is.numeric)
-iris_sup <- iris \%>\% select(Species)
-us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
+us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+us <- compute_clusters(us, minPts = 3, eps = 0.7)
+compute_clusters(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
 
 }
 \seealso{
-\code{\link[=new_umapscan]{new_umapscan()}}, \code{\link[=describe_clusters]{describe_clusters()}}, \code{\link[=get_cluster]{get_cluster()}}, \code{\link[=label_cluster]{label_cluster()}}
+\code{\link[=new_umapscan]{new_umapscan()}}, \code{\link[=describe_clusters]{describe_clusters()}}, \code{\link[=get_cluster]{get_cluster()}}, \code{\link[=rename_cluster]{rename_cluster()}},
+\code{\link[=plot_clusters]{plot_clusters()}}, \code{\link[=get_clusters_membership]{get_clusters_membership()}}, \code{\link[=remove_cluster]{remove_cluster()}}
 }

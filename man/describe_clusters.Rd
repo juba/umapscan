@@ -2,25 +2,30 @@
 % Please edit documentation in R/clustering.R
 \name{describe_clusters}
 \alias{describe_clusters}
-\title{Describe current clusters of an umapscan object}
+\title{Describe clusters of an umapscan object}
 \usage{
-describe_clusters(us, type = c("boxplot", "ridges"))
+describe_clusters(us, parent, type = c("boxplot", "ridges"))
 }
 \arguments{
 \item{us}{umapscan object to describe clusters}
 
+\item{parent}{name of the parent cluster}
+
 \item{type}{plot type, either \code{"boxplot"} or \code{"ridges"}}
 }
 \description{
-Only the not already validated clusters are taken into account.
+Describe clusters of an umapscan object
 }
 \examples{
 iris_num <- iris \%>\% select_if(is.numeric)
-iris_sup <- iris \%>\% select(Species)
-us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-us <- compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
+us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+us <- compute_clusters(us, minPts = 3, eps = 0.7)
 describe_clusters(us)
+us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
+describe_clusters(us, type = "ridge")
+describe_clusters(us, parent = "3")
 }
 \seealso{
-\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=get_cluster]{get_cluster()}}, \code{\link[=label_cluster]{label_cluster()}}
+\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=get_cluster_data]{get_cluster_data()}}, \code{\link[=get_clusters_membership]{get_clusters_membership()}},
+\code{\link[=rename_cluster]{rename_cluster()}}, \code{\link[=remove_cluster]{remove_cluster()}}
 }

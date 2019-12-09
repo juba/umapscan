@@ -31,9 +31,9 @@ A list of class \code{umapscan} with the following components :
 \item \code{umap} : results of UMAP embeddings
 \item \code{data} : original numerical dataset
 \item \code{data_sup} : supplementary dataset
-\item \code{cluster} : current clusters
-\item \code{cluster_validated} : current clusters status
+\item \code{clusters} : a \code{\link[data.tree:data.tree]{data.tree::data.tree()}} object of clusters
 \item \code{call} : function call
+\item \code{seed} : the seed used for random numbers for all umap and dbscan operations
 }
 }
 \description{
