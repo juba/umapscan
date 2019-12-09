@@ -5,83 +5,145 @@
 #' are taken into account.
 #'
 #' @param us umapscan object
+#' @param parent name of the parent cluster
 #' @param eps `eps` argument passed to [dbscan::dbscan()]
 #' @param minPts `minPts` argument passed to [dbscan::dbscan()]
 #' @param graph if TRUE, display a plot of the computed clusters
 #' @param alpha point transparency for clusters plot
+#' @param ellipses if TRUE, plot confidence ellipses around clusters
 #'
 #' @return
 #' Returns an updated `umapscan` object, and optionally displays a clusters plot.
 #'
 #' @seealso
-#' [new_umapscan()], [describe_clusters()], [get_cluster()], [label_cluster()]
+#' [new_umapscan()], [describe_clusters()], [get_cluster()], [rename_cluster()],
+#' [plot_clusters()], [get_clusters_membership()], [remove_cluster()]
 #'
 #' @export
 #'
 #' @examples
 #' iris_num <- iris %>% select_if(is.numeric)
-#' iris_sup <- iris %>% select(Species)
-#' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-#' compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
+#' compute_clusters(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
 #'
 #' @importFrom dbscan dbscan
 
-compute_clusters <- function(us, eps, minPts, graph = TRUE, alpha = 0.5) {
+compute_clusters <- function(us, parent, eps, minPts, graph = TRUE, alpha = 1, ellipses = TRUE) {
 
   if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
 
-  d_clust <- us$umap %>% filter(!us$cluster_validated)
+  if (missing(parent)) {
+    node <- us$clusters
+  } else {
+    node <- data.tree::FindNode(us$clusters, parent)
+  }
+  ids <- node$ids
+
+  d_clust <- us$umap %>% slice(ids)
+  set.seed(us$seed)
   db <- dbscan::dbscan(d_clust, eps = eps, minPts = minPts)
 
-  d_clust$cluster <- db$cluster
-  d_clust$cluster[d_clust$cluster == "0"] <- NA
+  clust <- db$cluster
+  parent_string <- ifelse(missing(parent), "", paste0(parent, "_"))
+  clust <- paste0(parent_string, clust)
+  clust[db$cluster == 0] <- NA
+  d_clust$cluster <- clust
 
-  if (n_distinct(d_clust$cluster) <= 12) {
-    color_scale <- scale_color_brewer("Cluster", palette = "Paired", na.value = "grey50")
-  } else {
-    color_scale <- ggsci::scale_color_d3(palette = "category20", name = "Cluster", na.value = "white")
+
+  for (cl in unique(clust)) {
+    if (is.na(cl)) next
+    .tmp <- node$AddChild(cl)
+    select <- (clust == cl) & !is.na(clust)
+    .tmp$ids <- ids[select]
+    .tmp$n <- length(.tmp$ids)
   }
+
+  if (graph) {
+    g <- plot_clusters(us, parent, alpha)
+    print(g)
+  }
+
+  us
+}
+
+
+
+#' Plot clusters of an umapscan object
+#'
+#' @param us umapscan object
+#' @param parent name of the parent cluster
+#' @param alpha point transparency for clusters plot
+#' @param ellipses if TRUE, plot confidence ellipses around clusters
+#'
+#' @seealso
+#' [compute_clusters()], [describe_clusters()]
+#' @export
+#'
+#' @examples
+#' iris_num <- iris %>% select_if(is.numeric)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7, graph = FALSE)
+#' plot_clusters(us, alpha = 1)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.45, graph = FALSE, parent = "3")
+#' plot_clusters(us, alpha = 0.5, ellipses = FALSE, parent = "3")
+#' plot_clusters(us)
+#'
+#' @import ggplot2
+
+plot_clusters <- function(us, parent, alpha = 1, ellipses = TRUE) {
+
+  clust <- get_clusters_membership(us, parent)
+  if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
+  d_clust <- us$umap[!is.na(clust),]
+  clust <- clust[!is.na(clust)]
+  d_clust$cluster <- clust
+
+  color_scale <- qualitative_palette(clust, label = "Cluster")
 
   g <- ggplot(d_clust, aes(x=x, y=y, color = factor(cluster))) +
     geom_point(size = 1, alpha = alpha) +
     color_scale +
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 
-  print(g)
+  if (ellipses) {
+    g <- g + stat_ellipse()
+  }
 
-  us$cluster[!us$cluster_validated] <- d_clust$cluster
-
-  us
-
+  g
 }
 
 
-#' Describe current clusters of an umapscan object
-#'
-#' Only the not already validated clusters are taken into account.
+#' Describe clusters of an umapscan object
 #'
 #' @param us umapscan object to describe clusters
 #' @param type plot type, either `"boxplot"` or `"ridges"`
+#' @param parent name of the parent cluster
 #'
 #' @seealso
-#' [compute_clusters()], [get_cluster()], [label_cluster()]
+#' [compute_clusters()], [get_cluster_data()], [get_clusters_membership()],
+#' [rename_cluster()], [remove_cluster()]
 #'
 #' @export
 #'
 #' @examples
 #' iris_num <- iris %>% select_if(is.numeric)
-#' iris_sup <- iris %>% select(Species)
-#' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-#' us <- compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
 #' describe_clusters(us)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
+#' describe_clusters(us, type = "ridge")
+#' describe_clusters(us, parent = "3")
 
-describe_clusters <- function(us, type = c("boxplot", "ridges")) {
+describe_clusters <- function(us, parent, type = c("boxplot", "ridges")) {
 
   type <- match.arg(type)
 
-  select <- !us$cluster_validated & !is.na(us$cluster)
+  clusters <- get_clusters_membership(us, parent)
+
+  select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)
-  d$cluster <- us$cluster[select]
+  d$cluster <- clusters[select]
 
   if (dplyr::n_distinct(d$cluster) <= 12) {
     fill_scale <- scale_fill_brewer("Cluster", palette = "Paired", na.value = "grey50")
@@ -92,7 +154,7 @@ describe_clusters <- function(us, type = c("boxplot", "ridges")) {
   d_long <- d %>%
     tidyr::pivot_longer(-cluster) %>%
     dplyr::mutate(
-      cluster = factor(cluster, levels = sort(as.numeric(unique(cluster))))
+      cluster = factor(cluster)
     )
 
   if (type == "boxplot") {
@@ -115,16 +177,58 @@ describe_clusters <- function(us, type = c("boxplot", "ridges")) {
 }
 
 
+#' Get cluster membership for each observation of an umapscan object
+#'
+#' The clusters taken into account are all the "leaves" of the object
+#' clusters tree. If a `parent` is specified, only the leaves of its
+#' subtree are taken.
+#'
+#' @param us umapscan object to describe clusters
+#' @param parent name of the parent cluster
+#'
+#' @seealso
+#' [compute_clusters()], [get_cluster_data()], [rename_cluster()], [remove_cluster()]
+#'
+#' @export
+#'
+#' @examples
+#' iris_num <- iris %>% select_if(is.numeric)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
+#' get_clusters_membership(us)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
+#' get_clusters_membership(us)
+#' get_clusters_membership(us, parent = "3")
 
+
+get_clusters_membership <- function(us, parent) {
+
+  clusters <- rep(NA, nrow(us$data))
+
+  if (missing(parent)) {
+    node <- us$clusters
+    if (is.null(node$children)) return(clusters)
+  } else {
+    node <- data.tree::FindNode(us$clusters, parent)
+  }
+
+  ids <- node$Get('ids', filterFun = data.tree::isLeaf)
+
+  purrr::iwalk(ids, function(id, name) {
+    clusters[id] <<- name
+  })
+
+  clusters
+}
 
 
 #' Get an umapscan cluster data
 #'
 #' @param us umapscan object
-#' @param clust cluster to retrieve
+#' @param cluster cluster to retrieve
 #'
 #' @seealso
-#' [compute_clusters()], [describe_clusters()], [label_cluster()]
+#' [compute_clusters()], [describe_clusters()], [rename_cluster()]
 #'
 #' @return
 #' 1 data frame with the `data` and `data_sup` variables of the cluster observations
@@ -133,46 +237,97 @@ describe_clusters <- function(us, type = c("boxplot", "ridges")) {
 #' @examples
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
-#' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-#' us <- compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
-#' get_cluster(us, 1)
+#' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
+#' get_cluster_data(us, "1")
 
-get_cluster <- function(us, clust) {
+get_cluster_data <- function(us, cluster) {
 
-  clust <- as.character(clust)
-  d <- dplyr::bind_cols(us$data_sup, us$data, cluster = us$cluster)
-  d %>% dplyr::filter(cluster == clust)
+  node <- data.tree::FindNode(us$clusters, cluster)
+  ids <- node$ids
+
+  d <- dplyr::bind_cols(us$data_sup, us$data)
+  d %>% dplyr::slice(ids) %>% mutate(umpascan_cluster = cluster)
 
 }
 
 
 
-#' Label and validate an umapscan cluster
+#' Rename an umapscan cluster
 #'
 #' @param us umapscan object
-#' @param clust cluster identifier
-#' @param label label to attribute to cluster
+#' @param old current cluster identifier
+#' @param new new cluster label
 #'
 #' @seealso
-#' [compute_clusters()], [describe_clusters()], [get_cluster()]
+#' [compute_clusters()], [describe_clusters()]
 #'
 #' @return
-#' A updated umapscan object
+#' An updated umapscan object (invisibly). Note that the original umapscan object is
+#' modified in place.
 #' @export
 #'
 #' @examples
 #' iris_num <- iris %>% select_if(is.numeric)
-#' iris_sup <- iris %>% select(Species)
-#' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
-#' us <- compute_clusters(us, minPts = 10, eps = 0.72, alpha = 1)
-#' us <- label_cluster(us, 1, "Cluster 1")
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
+#' rename_cluster(us, "1", "Cluster 1")
 #' us
 
-label_cluster <- function(us, clust, label) {
-  clust <- as.character(clust)
-  select <- us$cluster == clust
-  us$cluster[select] <- label
-  us$cluster_validated[select] <- TRUE
+rename_cluster <- function(us, old, new) {
 
-  us
+  node <- data.tree::FindNode(us$clusters, old)
+  node$name <- new
+
+  invisible(us)
 }
+
+
+#' Remove a cluster from an umapscan object
+#'
+#' If the cluster has children, they will be removed too.
+#'
+#' @param us umapscan object
+#' @param cluster label of the cluster to remove
+#'
+#' @seealso
+#' [compute_clusters()], [describe_clusters()]
+#'
+#' @return
+#' An updated umapscan object (invisibly). Note that the original umapscan object is
+#' modified in place.
+#' @export
+#'
+#' @examples
+#' iris_num <- iris %>% select_if(is.numeric)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
+#' us <- compute_clusters(us, parent = "3" ,minPts = 3, eps = 0.45)
+#' remove_cluster(us, "3_1")
+#' us
+#' remove_cluster(us, "3")
+#' us
+
+remove_cluster <- function(us, cluster) {
+  parent_node <- data.tree::FindNode(us$clusters, cluster)$parent
+  parent_node$RemoveChild(cluster)
+
+  invisible(us)
+}
+
+
+#' @export
+
+umapscan_tree <- function(us) {
+
+  collapsibleTree::collapsibleTree(
+    us$cluster,
+    collapse = FALSE,
+    tooltip = TRUE,
+    attribute = "n",
+    inputId = "node",
+    inputClickedId = "clicked",
+  )
+
+}
+

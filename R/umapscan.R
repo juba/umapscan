@@ -16,9 +16,9 @@
 #' - `umap` : results of UMAP embeddings
 #' - `data` : original numerical dataset
 #' - `data_sup` : supplementary dataset
-#' - `cluster` : current clusters
-#' - `cluster_validated` : current clusters status
+#' - `clusters` : a [data.tree::data.tree()] object of clusters
 #' - `call` : function call
+#' - `seed` : the seed used for random numbers for all umap and dbscan operations
 #'
 #' @seealso [uwot::umap()], [plot.umapscan()]
 #'
@@ -63,16 +63,17 @@ new_umapscan <- function(
     y = umap[,2],
   )
 
-  cluster <- rep(NA_character_, nrow(d))
-  cluster_validated <- rep(FALSE, nrow(d))
+  clusters <- data.tree::Node$new("")
+  clusters$ids <- 1:nrow(d)
+  clusters$n <- nrow(d)
 
   res <- list(
     umap = umap,
     data = d,
-    cluster = cluster,
-    cluster_validated = cluster_validated,
+    clusters = clusters,
     data_sup = data_sup,
-    call = match.call()
+    call = match.call(),
+    seed = seed
   )
 
   class(res) <- c(class(res), "umapscan")
@@ -100,10 +101,8 @@ print.umapscan <- function(us, ...) {
       " data frame of supplementary data\n\n", sep = "")
   }
 
-  n_val <- length(unique(us$cluster[us$cluster_validated]))
-  prop_val <- mean(us$cluster_validated) * 100
-  cat(n_val, " validated clusters, ",
-    round(prop_val, 1), "% of observations\n\n", sep = "")
+  cat("\nClusters :\n\n")
+  print(us$clusters)
 
   invisible(us)
 }
@@ -155,12 +154,18 @@ plot.umapscan <- function(
 
   g <- g + geom_point(aes(color = {{color}}), alpha = alpha)
 
-  if (is.numeric(d %>% dplyr::pull({{color}}))) {
+  col_var <- d %>% dplyr::pull({{color}})
+
+  if (is.numeric(col_var)) {
     if (missing(palette)) palette <- "inferno"
     g <- g + scale_color_viridis_c(label, option = palette)
   } else {
-    if (missing(palette)) palette <- "Paired"
-    g <- g + scale_color_brewer(label, palette = palette)
+    if (missing(palette)) {
+      scale <- qualitative_palette(col_var, label)
+    } else {
+      scale <- scale_color_brewer(label, palette = palette)
+    }
+    g <- g + scale
   }
 
   if (ellipses) {
@@ -170,6 +175,4 @@ plot.umapscan <- function(
   g
 
 }
-
-
 
