@@ -34,29 +34,34 @@ compute_clusters <- function(us, parent, eps, minPts, graph = TRUE, alpha = 1, e
   if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
 
   if (missing(parent)) {
-    node <- us$clusters
+    parent <- ""
+    ids <- 1:nrow(us$data)
   } else {
-    node <- data.tree::FindNode(us$clusters, parent)
+    ids <- get_ids(us, parent)
   }
-  ids <- node$ids
+  us <- remove_cluster(us, parent)
 
   d_clust <- us$umap %>% slice(ids)
   set.seed(us$seed)
   db <- dbscan::dbscan(d_clust, eps = eps, minPts = minPts)
 
   clust <- db$cluster
-  parent_string <- ifelse(missing(parent), "", paste0(parent, "_"))
+  parent_string <- ifelse(parent == "", "", paste0(parent, "_"))
   clust <- paste0(parent_string, clust)
-  clust[db$cluster == 0] <- NA
+  clust[db$cluster == 0] <- "<Noise>"
   d_clust$cluster <- clust
 
 
   for (cl in unique(clust)) {
     if (is.na(cl)) next
-    .tmp <- node$AddChild(cl)
     select <- (clust == cl) & !is.na(clust)
-    .tmp$ids <- ids[select]
-    .tmp$n <- length(.tmp$ids)
+    line <- tibble(
+      from = parent,
+      to = cl,
+      n = length(ids[select]),
+      ids = list(ids[select])
+    )
+    us$clusters <- bind_rows(us$clusters, line)
   }
 
   if (graph) {
@@ -64,7 +69,7 @@ compute_clusters <- function(us, parent, eps, minPts, graph = TRUE, alpha = 1, e
     print(g)
   }
 
-  us
+  invisible(us)
 }
 
 
@@ -97,8 +102,8 @@ plot_clusters <- function(us, parent, alpha = 1, ellipses = TRUE) {
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
   d_clust <- us$umap[!is.na(clust),]
   clust <- clust[!is.na(clust)]
+  clust[clust == "<Noise>"] <- NA
   d_clust$cluster <- clust
-
   color_scale <- qualitative_palette(clust, label = "Cluster")
 
   g <- ggplot(d_clust, aes(x=x, y=y, color = factor(cluster))) +
@@ -107,7 +112,8 @@ plot_clusters <- function(us, parent, alpha = 1, ellipses = TRUE) {
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 
   if (ellipses) {
-    g <- g + stat_ellipse()
+    d_ellipses <- d_clust %>% drop_na(cluster)
+    g <- g + stat_ellipse(data = d_ellipses, na.rm = TRUE)
   }
 
   g
@@ -140,6 +146,7 @@ describe_clusters <- function(us, parent, type = c("boxplot", "ridges")) {
   type <- match.arg(type)
 
   clusters <- get_clusters_membership(us, parent)
+  #clusters[clusters == "parent_NA"] <- NA
 
   select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)
@@ -206,19 +213,48 @@ get_clusters_membership <- function(us, parent) {
   clusters <- rep(NA, nrow(us$data))
 
   if (missing(parent)) {
-    node <- us$clusters
-    if (is.null(node$children)) return(clusters)
-  } else {
-    node <- data.tree::FindNode(us$clusters, parent)
+    parent <- ""
+    if (nrow(us$clusters) == 0) return(clusters)
   }
 
-  ids <- node$Get('ids', filterFun = data.tree::isLeaf)
+  leaves <- get_leaves(us, parent)
 
-  purrr::iwalk(ids, function(id, name) {
-    clusters[id] <<- name
-  })
+  #clusters[get_ids(us, parent)] <- "parent_NA"
+
+  for (leaf in leaves) {
+    clusters[get_ids(us, leaf)] <- leaf
+  }
 
   clusters
+}
+
+
+get_leaves <- function(us, parent) {
+
+  if (missing(parent)) {
+    parent <- ""
+  }
+
+  children <- us$clusters$to[us$clusters$from == parent]
+
+  if (length(children) == 0) {
+    return(parent)
+  }
+  leaves <- character(0)
+  for(child in children) {
+    leaves <- c(leaves, get_leaves(us, child))
+  }
+  return(leaves)
+}
+
+
+get_ids <- function(us, node) {
+
+  us$clusters %>%
+    filter(to == node) %>%
+    pull(ids) %>%
+    unlist
+
 }
 
 
@@ -243,9 +279,7 @@ get_clusters_membership <- function(us, parent) {
 
 get_cluster_data <- function(us, cluster) {
 
-  node <- data.tree::FindNode(us$clusters, cluster)
-  ids <- node$ids
-
+  ids <- get_ids(us, cluster)
   d <- dplyr::bind_cols(us$data_sup, us$data)
   d %>% dplyr::slice(ids) %>% mutate(umpascan_cluster = cluster)
 
@@ -276,8 +310,11 @@ get_cluster_data <- function(us, cluster) {
 
 rename_cluster <- function(us, old, new) {
 
-  node <- data.tree::FindNode(us$clusters, old)
-  node$name <- new
+  us$clusters <- us$clusters %>%
+    mutate(
+      from = if_else(from == old, new, from),
+      to = if_else(to == old, new, to),
+    )
 
   invisible(us)
 }
@@ -289,6 +326,7 @@ rename_cluster <- function(us, old, new) {
 #'
 #' @param us umapscan object
 #' @param cluster label of the cluster to remove
+#' @param rm_root if TRUE,
 #'
 #' @seealso
 #' [compute_clusters()], [describe_clusters()]
@@ -308,9 +346,16 @@ rename_cluster <- function(us, old, new) {
 #' remove_cluster(us, "3")
 #' us
 
-remove_cluster <- function(us, cluster) {
-  parent_node <- data.tree::FindNode(us$clusters, cluster)$parent
-  parent_node$RemoveChild(cluster)
+remove_cluster <- function(us, cluster, rm_root = FALSE) {
+  from_lines <- us$clusters$from == cluster
+  for (to in us$clusters %>% filter(from_lines) %>% pull("to")) {
+    us <- remove_cluster(us, to, rm_root = TRUE)
+  }
+
+  if (rm_root) {
+    to_lines <- us$clusters$to == cluster
+    us$clusters <- us$clusters %>% filter(!to_lines)
+  }
 
   invisible(us)
 }
@@ -320,8 +365,10 @@ remove_cluster <- function(us, cluster) {
 
 umapscan_tree <- function(us) {
 
+  tree <- as.Node(us$clusters, mode = "network")
+
   collapsibleTree::collapsibleTree(
-    us$cluster,
+    tree,
     collapse = FALSE,
     tooltip = TRUE,
     attribute = "n",

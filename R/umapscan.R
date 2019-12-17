@@ -4,12 +4,12 @@
 #' @param n_neighbors `n_neighbors` argument passed to [uwot::umap()]
 #' @param min_dist `min_dist` argument passed to [uwot::umap()]
 #' @param metric `metric` argument passed to [uwot::umap()]
-#' @param scale if `TRUE`, variables are scaled with [base::scale()] before
-#'   computing umap embeddings
+#' @param scale scaling to be applied to the variables. Value passed to [uwot::umap()].
 #' @param seed integer seed passed to [base::set.seed()] before umap embeddings for
 #'   reproductibility
 #' @param data_sup a data.frame of supplementary variables not used for UMAP
 #'   embeddings but for results visualisation
+#' @param ... other arguments passed to [uwot::umap()]
 #'
 #' @return
 #' A list of class `umapscan` with the following components :
@@ -34,9 +34,10 @@ new_umapscan <- function(
   n_neighbors = 15,
   min_dist = 0.01,
   metric = "euclidean",
-  scale = TRUE,
+  scale = FALSE,
   seed,
-  data_sup = NULL
+  data_sup = NULL,
+  ...
 ) {
 
   if (!inherits(d, "data.frame")) stop("d must be a numerical data frame.")
@@ -47,8 +48,6 @@ new_umapscan <- function(
 
   d_comp <- d
 
-  if (scale) { d_comp <- d %>% dplyr::mutate_all(base::scale) }
-
   if (missing(seed)) { seed <- round(runif(1) * 100000) }
 
   set.seed(seed)
@@ -56,16 +55,21 @@ new_umapscan <- function(
     d_comp,
     n_neighbors = n_neighbors,
     min_dist = min_dist,
-    metric = metric
+    metric = metric,
+    scale = scale,
+    ...
   )
   umap <- tibble::tibble(
     x = umap[,1],
     y = umap[,2],
   )
 
-  clusters <- data.tree::Node$new("")
-  clusters$ids <- 1:nrow(d)
-  clusters$n <- nrow(d)
+  clusters <- tibble(
+    from = character(0),
+    to = character(0),
+    n = integer(0),
+    ids = list()
+  )
 
   res <- list(
     umap = umap,
@@ -98,11 +102,16 @@ print.umapscan <- function(us, ...) {
   if (!is.null(us$data_sup)) {
     dims_sup <- dim(us$data_sup)
     cat ("with a ", dims_sup[1], "x", dims_sup[2],
-      " data frame of supplementary data\n\n", sep = "")
+      " data frame of supplementary data\n", sep = "")
   }
 
-  cat("\nClusters :\n\n")
-  print(us$clusters)
+  cat("\nClusters :")
+  if (nrow(us$cluster) > 0) {
+    cat("\n\n")
+    print(data.tree::as.Node(us$clusters, mode = "network"))
+  } else {
+    cat(" <none>\n\n")
+  }
 
   invisible(us)
 }
