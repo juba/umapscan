@@ -29,21 +29,21 @@
 #'
 #' @importFrom dbscan dbscan
 
-compute_clusters <- function(us, parent, eps, minPts, graph = TRUE, alpha = 1, ellipses = TRUE) {
+compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, graph = TRUE, alpha = 1, ellipses = TRUE) {
 
   if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
 
-  if (missing(parent)) {
-    parent <- ""
-    ids <- 1:nrow(us$data)
-  } else {
-    ids <- get_ids(us, parent)
-  }
-  us <- remove_cluster(us, parent)
+  ids <- get_ids(us, parent, noise_only = noise_only)
+  us <- remove_cluster(us, cluster = parent, noise_only = noise_only)
 
   d_clust <- us$umap %>% slice(ids)
   set.seed(us$seed)
-  db <- dbscan::dbscan(d_clust, eps = eps, minPts = minPts)
+  if (missing(eps)) {
+    message("Missing eps, hdbscan performed instead of dbscan")
+    db <- dbscan::hdbscan(d_clust, minPts = minPts)
+  } else {
+    db <- dbscan::dbscan(d_clust, eps = eps, minPts = minPts)
+  }
 
   clust <- db$cluster
   parent_string <- ifelse(parent == "", "", paste0(parent, "_"))
@@ -248,12 +248,20 @@ get_leaves <- function(us, parent) {
 }
 
 
-get_ids <- function(us, node) {
+get_ids <- function(us, node, noise_only = FALSE) {
 
-  us$clusters %>%
-    filter(to == node) %>%
-    pull(ids) %>%
-    unlist
+  if (node == "" && !noise_only) {
+    return(1:nrow(us$data))
+  }
+
+  if (!noise_only) {
+    line <- us$clusters %>%
+      filter(to == node)
+  } else {
+    line <- us$clusters %>%
+      filter(from == node, to == "<Noise>")
+  }
+  line %>% pull(ids) %>% unlist
 
 }
 
@@ -346,7 +354,13 @@ rename_cluster <- function(us, old, new) {
 #' remove_cluster(us, "3")
 #' us
 
-remove_cluster <- function(us, cluster, rm_root = FALSE) {
+remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
+
+  if (noise_only) {
+    us$clusters <- us$clusters %>% filter(!(from == cluster & to == "<Noise>"))
+    return(us)
+  }
+
   from_lines <- us$clusters$from == cluster
   for (to in us$clusters %>% filter(from_lines) %>% pull("to")) {
     us <- remove_cluster(us, to, rm_root = TRUE)
@@ -357,7 +371,7 @@ remove_cluster <- function(us, cluster, rm_root = FALSE) {
     us$clusters <- us$clusters %>% filter(!to_lines)
   }
 
-  invisible(us)
+  us
 }
 
 
