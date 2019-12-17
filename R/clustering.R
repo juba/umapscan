@@ -156,23 +156,19 @@ describe_clusters <- function(us, parent, type = c("boxplot", "ridges")) {
   type <- match.arg(type)
 
   clusters <- get_clusters_membership(us, parent)
-  #clusters[clusters == "parent_NA"] <- NA
+  clusters[clusters == "<Noise>"] <- NA
 
   select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)
   d$cluster <- clusters[select]
-
-  if (dplyr::n_distinct(d$cluster) <= 12) {
-    fill_scale <- scale_fill_brewer("Cluster", palette = "Paired", na.value = "grey50")
-  } else {
-    fill_scale <- ggsci::scale_fill_d3(palette = "category20", name = "Cluster", na.value = "white")
-  }
 
   d_long <- d %>%
     tidyr::pivot_longer(-cluster) %>%
     dplyr::mutate(
       cluster = factor(cluster)
     )
+
+  fill_scale <- qualitative_palette(d_long$cluster, "Cluster", type = "fill")
 
   if (type == "boxplot") {
     g <- ggplot(d_long, aes(x = cluster, y = value, fill = cluster)) +
