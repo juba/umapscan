@@ -55,9 +55,19 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   for (cl in unique(clust)) {
     if (is.na(cl)) next
     select <- (clust == cl) & !is.na(clust)
+    ## Make unique cluster name
+    label <- cl
+    if (label != "<Noise>") {
+      i <- 0
+      while(us$clusters %>% filter(to == label) %>% nrow > 0) {
+        i <- i + 1
+        if (i>26) stop("No unique cluster label possible")
+        label <- paste0(cl, letters[i])
+      }
+    }
     line <- tibble(
       from = parent,
-      to = cl,
+      to = label,
       n = length(ids[select]),
       ids = list(ids[select])
     )
