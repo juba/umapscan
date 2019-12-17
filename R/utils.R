@@ -12,5 +12,5 @@ qualitative_palette <- function(var, label) {
   if (n_values <= 12) {
     return(scale_color_brewer(label, palette = "Paired", na.value = "grey50"))
   }
-  return(gsci::scale_color_d3(palette = "category20", name = label, na.value = "white"))
+  return(ggsci::scale_color_d3(palette = "category20", name = label, na.value = "white"))
 }
