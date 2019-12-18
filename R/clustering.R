@@ -33,7 +33,11 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 
   if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
 
-  ids <- get_ids(us, parent, noise_only = noise_only)
+  if (noise_only) {
+    ids <- get_noise_ids(us, parent)
+  } else {
+    ids <- get_ids(us, parent)
+  }
   us <- remove_cluster(us, cluster = parent, noise_only = noise_only)
 
   d_clust <- us$umap %>% slice(ids)
@@ -229,8 +233,6 @@ get_clusters_membership <- function(us, parent) {
 
   leaves <- get_leaves(us, parent)
 
-  #clusters[get_ids(us, parent)] <- "parent_NA"
-
   for (leaf in leaves) {
     clusters[get_ids(us, leaf)] <- leaf
   }
@@ -238,6 +240,10 @@ get_clusters_membership <- function(us, parent) {
   clusters
 }
 
+
+
+#' Get leaves from a parent node
+#' (not exported)
 
 get_leaves <- function(us, parent) {
 
@@ -258,21 +264,29 @@ get_leaves <- function(us, parent) {
 }
 
 
-get_ids <- function(us, node, noise_only = FALSE) {
+#' Get ids from a node name
+#' (not exported)
 
-  if (node == "" && !noise_only) {
+get_ids <- function(us, node) {
+
+  if (node == "") {
     return(1:nrow(us$data))
   }
 
-  if (!noise_only) {
-    line <- us$clusters %>%
-      filter(to == node)
-  } else {
-    line <- us$clusters %>%
-      filter(from == node, to == "<Noise>")
-  }
-  line %>% pull(ids) %>% unlist
+  us$clusters %>%
+    filter(to == node) %>%
+    pull(ids) %>%
+    unlist
+}
 
+#' Get ids from a <Noise> child of a node
+#' (not exported)
+
+get_noise_ids <- function(us, node) {
+  us$clusters %>%
+    filter(from == node, to == "<Noise>") %>%
+    pull(ids) %>%
+    unlist
 }
 
 
