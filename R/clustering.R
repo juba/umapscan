@@ -329,8 +329,8 @@ get_cluster_data <- function(us, cluster) {
 #' [compute_clusters()], [describe_clusters()]
 #'
 #' @return
-#' An updated umapscan object (invisibly). Note that the original umapscan object is
-#' modified in place.
+#' An updated umapscan object (invisibly). If two clusters have the same name after
+#' renaming, they are merged together.
 #' @export
 #'
 #' @examples
@@ -346,9 +346,15 @@ rename_cluster <- function(us, old, new) {
     mutate(
       from = if_else(from == old, new, from),
       to = if_else(to == old, new, to),
-    )
+    ) %>%
+    group_by(from, to) %>%
+    summarise(
+      n = sum(n),
+      ids = list(unlist(c(ids)))
+    ) %>%
+    ungroup()
 
-  invisible(us)
+  us
 }
 
 
