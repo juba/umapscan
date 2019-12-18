@@ -79,11 +79,11 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   }
 
   if (graph) {
-    g <- plot_clusters(us, parent, alpha)
+    g <- plot_clusters(us, parent, alpha = alpha)
     print(g)
   }
 
-  invisible(us)
+  us
 }
 
 
