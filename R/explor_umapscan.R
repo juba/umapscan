@@ -32,7 +32,7 @@ explor_umapscan <- function(us) {
             )
           ),
           sliderInput(
-            "alpha",
+            "alpha_data",
             "Point opacity",
             min = 0.1,
             max = 1,
@@ -40,16 +40,15 @@ explor_umapscan <- function(us) {
             value = 0.5
           ),
           checkboxInput(
-            "ellipses",
+            "ellipses_data",
             "Ellipses",
             value = FALSE
           ),
           checkboxInput(
-            "fixed",
+            "fixed_data",
             "Fixed coordinates",
             value = FALSE
           ),
-
         ),
         mainPanel(
           plotOutput("umap_plot")
@@ -58,7 +57,29 @@ explor_umapscan <- function(us) {
 
       tabPanel(
         "Clusters",
-        splitLayout(
+        div(class= "col-md-4",
+          wellPanel(
+             sliderInput(
+              "alpha_clusters",
+              "Point opacity",
+              min = 0.1,
+              max = 1,
+              step = 0.1,
+              value = 0.5
+            ),
+            checkboxInput(
+              "ellipses_clusters",
+              "Ellipses",
+              value = FALSE
+            ),
+            checkboxInput(
+              "fixed_clusters",
+              "Fixed coordinates",
+              value = FALSE
+            ),
+          )
+        ),
+        div(class= "col-md-8",
           collapsibleTree::collapsibleTreeOutput("umap_tree"),
           plotOutput("umap_clusters")
         )
@@ -74,8 +95,7 @@ explor_umapscan <- function(us) {
         if (is.null(input$node)) return(collapsed_nodes)
         if (length(input$node) == 0) return(collapsed_nodes)
         input$clicked
-        print(input$node)
-        value <- input$node[[1]]
+        value <- input$node[[length(input$node)]]
         present <- value %in% collapsed_nodes
         if (present) {
           collapsed_nodes <<- collapsed_nodes[collapsed_nodes != value]
@@ -88,22 +108,19 @@ explor_umapscan <- function(us) {
       tree <- reactive({
         if(length(collapsed()) == 0) return(us)
         out <- us
-        out$clusters <- data.tree::Clone(us$clusters)
         for (node_name in collapsed()) {
-          node <- data.tree::FindNode(out$clusters, node_name)
-          for (child in node$children) {
-            node$RemoveChild(child$name)
-          }
+          out <- remove_cluster(out, cluster = node_name)
         }
+        print(out$clusters)
         out
       })
 
       output$umap_plot <- renderPlot({
         var <- rlang::sym(input$var)
         plot(us, color = !!var,
-          alpha = input$alpha,
-          ellipses = input$ellipses,
-          fixed = input$fixed)
+          alpha = input$alpha_data,
+          ellipses = input$ellipses_data,
+          fixed = input$fixed_data)
       })
 
       output$umap_tree <- collapsibleTree::renderCollapsibleTree({
@@ -111,7 +128,11 @@ explor_umapscan <- function(us) {
       })
 
       output$umap_clusters <- renderPlot({
-        plot_clusters(tree())
+        plot_clusters(tree(),
+          alpha = input$alpha_clusters,
+          ellipses = input$ellipses_clusters,
+          fixed = input$fixed_clusters
+        )
       })
 
     }
