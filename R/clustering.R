@@ -106,7 +106,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #'
 #' @import ggplot2
 
-plot_clusters <- function(us, parent, alpha = 1, ellipses = TRUE) {
+plot_clusters <- function(us, parent = "", alpha = 1, ellipses = TRUE, fixed = FALSE) {
 
   clust <- get_clusters_membership(us, parent)
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
@@ -124,6 +124,10 @@ plot_clusters <- function(us, parent, alpha = 1, ellipses = TRUE) {
   if (ellipses) {
     d_ellipses <- d_clust %>% drop_na(cluster)
     g <- g + stat_ellipse(data = d_ellipses, na.rm = TRUE)
+  }
+
+  if (fixed) {
+    g <- g + coord_fixed()
   }
 
   g
