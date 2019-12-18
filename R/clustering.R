@@ -110,9 +110,9 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #'
 #' @import ggplot2
 
-plot_clusters <- function(us, parent = "", alpha = 1, ellipses = TRUE, fixed = FALSE) {
+plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE) {
 
-  clust <- get_clusters_membership(us, parent)
+  clust <- get_clusters_membership(us, parent, noise_inherit_parent = noise_inherit_parent)
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
   d_clust <- us$umap[!is.na(clust),]
   clust <- clust[!is.na(clust)]
@@ -159,11 +159,11 @@ plot_clusters <- function(us, parent = "", alpha = 1, ellipses = TRUE, fixed = F
 #' describe_clusters(us, type = "ridge")
 #' describe_clusters(us, parent = "3")
 
-describe_clusters <- function(us, parent, type = c("boxplot", "ridges")) {
+describe_clusters <- function(us, parent = "", type = c("boxplot", "ridges")) {
 
   type <- match.arg(type)
 
-  clusters <- get_clusters_membership(us, parent)
+  clusters <- get_clusters_membership(us, parent, noise_inherit_parent = FALSE)
   clusters[clusters == "<Noise>"] <- NA
 
   select <- !is.na(clusters)
@@ -222,19 +222,31 @@ describe_clusters <- function(us, parent, type = c("boxplot", "ridges")) {
 #' get_clusters_membership(us, parent = "3")
 
 
-get_clusters_membership <- function(us, parent) {
+get_clusters_membership <- function(us, parent = "", noise_inherit_parent = FALSE) {
+
+  if (parent == "<Noise>") {
+    stop("Can't get membership starting from a <Noise> node")
+  }
 
   clusters <- rep(NA, nrow(us$data))
 
-  if (missing(parent)) {
-    parent <- ""
-    if (nrow(us$clusters) == 0) return(clusters)
+  if (nrow(us$clusters) == 0) {
+    return(clusters)
   }
 
-  leaves <- get_leaves(us, parent)
+  leaves <- get_leaves(us, node = parent)
 
-  for (leaf in leaves) {
-    clusters[get_ids(us, leaf)] <- leaf
+  for (i in 1:nrow(leaves)) {
+    leaf <- leaves[i,]
+    if (leaf$to == "<Noise>") {
+      if (noise_inherit_parent) {
+        clusters[get_noise_ids(us, leaf$from)] <- leaf$from
+      } else {
+        clusters[get_noise_ids(us, leaf$from)] <- leaf$to
+      }
+    } else {
+      clusters[get_ids(us, leaf$to)] <- leaf$to
+    }
   }
 
   clusters
@@ -242,23 +254,23 @@ get_clusters_membership <- function(us, parent) {
 
 
 
-#' Get leaves from a parent node
+#' Get leaves from a node
 #' (not exported)
 
-get_leaves <- function(us, parent) {
+get_leaves <- function(us, node = "", parent = NA) {
 
-  if (missing(parent)) {
-    parent <- ""
+  if (node == "<Noise>" && is.na(parent)) {
+    stop("Can't get leaves from a <Noise> node.")
   }
 
-  children <- us$clusters$to[us$clusters$from == parent]
+  children <- us$clusters$to[us$clusters$from == node]
 
   if (length(children) == 0) {
-    return(parent)
+    return(tibble(from = parent, to = node))
   }
-  leaves <- character(0)
+  leaves <- tibble(from = character(0), to = character(0))
   for(child in children) {
-    leaves <- c(leaves, get_leaves(us, child))
+    leaves <- bind_rows(leaves, get_leaves(us, child, parent = node))
   }
   return(leaves)
 }
