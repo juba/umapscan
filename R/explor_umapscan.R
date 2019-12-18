@@ -112,11 +112,7 @@ explor_umapscan <- function(us) {
 
       tree <- reactive({
         if(length(collapsed()) == 0) return(us)
-        out <- us
-        for (node_name in collapsed()) {
-          out <- remove_cluster(out, cluster = node_name)
-        }
-        out
+        collapse_clusters(us, collapsed())
       })
 
       output$umap_plot <- renderPlot({

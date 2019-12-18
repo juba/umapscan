@@ -442,3 +442,31 @@ umapscan_tree <- function(us) {
 
 }
 
+#' @export
+
+reinit_clusters <- function(us) {
+  us$clusters <- tibble(
+    from = character(0),
+    to = character(0),
+    n = integer(0),
+    ids = list()
+  )
+
+  us
+}
+
+
+#' @export
+
+collapse_clusters <- function(us, collapsed) {
+
+  for (node in collapsed) {
+    us <- remove_cluster(us, node)
+  }
+
+  us
+}
+
+
+
+
