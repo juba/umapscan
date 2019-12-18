@@ -371,10 +371,18 @@ remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
     return(us)
   }
 
-  from_lines <- us$clusters$from == cluster
-  for (to in us$clusters %>% filter(from_lines) %>% pull("to")) {
-    us <- remove_cluster(us, to, rm_root = TRUE)
-  }
+  from_lines <- us$clusters %>%
+    filter(from == cluster) %>%
+    select(this_from = from, this_to = to)
+  purrr::pwalk(from_lines, function(this_from, this_to) {
+    ## Ensure we only remove one <Noise> node
+    if (this_to == "<Noise>") {
+      us$clusters <<- us$clusters %>%
+        filter(!(from == this_from & to == this_to))
+    } else {
+      us <<- remove_cluster(us, this_to, rm_root = TRUE)
+    }
+  })
 
   if (rm_root) {
     to_lines <- us$clusters$to == cluster
