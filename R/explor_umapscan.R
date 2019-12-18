@@ -77,6 +77,11 @@ explor_umapscan <- function(us) {
               "Fixed coordinates",
               value = FALSE
             ),
+            checkboxInput(
+              "noise_parent_clusters",
+              "<Noise> inherits parent",
+              value = FALSE
+            ),
           )
         ),
         div(class= "col-md-8",
@@ -111,7 +116,6 @@ explor_umapscan <- function(us) {
         for (node_name in collapsed()) {
           out <- remove_cluster(out, cluster = node_name)
         }
-        print(out$clusters)
         out
       })
 
@@ -131,7 +135,8 @@ explor_umapscan <- function(us) {
         plot_clusters(tree(),
           alpha = input$alpha_clusters,
           ellipses = input$ellipses_clusters,
-          fixed = input$fixed_clusters
+          fixed = input$fixed_clusters,
+          noise_inherit_parent = input$noise_parent_clusters
         )
       })
 
