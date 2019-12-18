@@ -385,7 +385,7 @@ remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
 
 umapscan_tree <- function(us) {
 
-  tree <- as.Node(us$clusters, mode = "network")
+  tree <- data.tree::as.Node(us$clusters, mode = "network")
 
   collapsibleTree::collapsibleTree(
     tree,
