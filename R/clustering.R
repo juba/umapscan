@@ -420,9 +420,16 @@ remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
 
 #' @export
 
-umapscan_tree <- function(us) {
+umapscan_tree <- function(us, max_label_length = 100) {
 
   tree <- data.tree::as.Node(us$clusters, mode = "network")
+
+  tree$Do(function(node) {
+    if (nchar(node$name) > max_label_length) {
+      node$name <- substr(node$name, 1, max_label_length)
+      node$name <- paste0(node$name, "...")
+    }
+  })
 
   collapsibleTree::collapsibleTree(
     tree,
@@ -434,6 +441,7 @@ umapscan_tree <- function(us) {
   )
 
 }
+
 
 #' @export
 

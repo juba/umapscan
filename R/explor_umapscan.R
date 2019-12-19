@@ -124,7 +124,7 @@ explor_umapscan <- function(us) {
       })
 
       output$umap_tree <- collapsibleTree::renderCollapsibleTree({
-        umapscan_tree(us)
+        umapscan_tree(us, max_label_length = 20)
       })
 
       output$umap_clusters <- renderPlot({
