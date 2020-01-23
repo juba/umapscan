@@ -4,7 +4,7 @@
 \alias{describe_clusters}
 \title{Describe clusters of an umapscan object}
 \usage{
-describe_clusters(us, parent, type = c("boxplot", "ridges"))
+describe_clusters(us, parent = "", type = c("boxplot", "ridges"))
 }
 \arguments{
 \item{us}{umapscan object to describe clusters}

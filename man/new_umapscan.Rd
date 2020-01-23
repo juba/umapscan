@@ -4,8 +4,16 @@
 \alias{new_umapscan}
 \title{Compute UMAP embeddings from a numerical data frame}
 \usage{
-new_umapscan(d, n_neighbors = 15, min_dist = 0.01,
-  metric = "euclidean", scale = TRUE, seed, data_sup = NULL)
+new_umapscan(
+  d,
+  n_neighbors = 15,
+  min_dist = 0.01,
+  metric = "euclidean",
+  scale = FALSE,
+  seed,
+  data_sup = NULL,
+  ...
+)
 }
 \arguments{
 \item{d}{a data frame of numeric variables}
@@ -16,14 +24,15 @@ new_umapscan(d, n_neighbors = 15, min_dist = 0.01,
 
 \item{metric}{\code{metric} argument passed to \code{\link[uwot:umap]{uwot::umap()}}}
 
-\item{scale}{if \code{TRUE}, variables are scaled with \code{\link[base:scale]{base::scale()}} before
-computing umap embeddings}
+\item{scale}{scaling to be applied to the variables. Value passed to \code{\link[uwot:umap]{uwot::umap()}}.}
 
 \item{seed}{integer seed passed to \code{\link[base:set.seed]{base::set.seed()}} before umap embeddings for
 reproductibility}
 
 \item{data_sup}{a data.frame of supplementary variables not used for UMAP
 embeddings but for results visualisation}
+
+\item{...}{other arguments passed to \code{\link[uwot:umap]{uwot::umap()}}}
 }
 \value{
 A list of class \code{umapscan} with the following components :

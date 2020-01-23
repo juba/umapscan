@@ -4,12 +4,14 @@
 \alias{remove_cluster}
 \title{Remove a cluster from an umapscan object}
 \usage{
-remove_cluster(us, cluster)
+remove_cluster(us, cluster, rm_root = FALSE, noise_only = FALSE)
 }
 \arguments{
 \item{us}{umapscan object}
 
 \item{cluster}{label of the cluster to remove}
+
+\item{rm_root}{if TRUE,}
 }
 \value{
 An updated umapscan object (invisibly). Note that the original umapscan object is

@@ -4,7 +4,14 @@
 \alias{plot_clusters}
 \title{Plot clusters of an umapscan object}
 \usage{
-plot_clusters(us, parent, alpha = 1, ellipses = TRUE)
+plot_clusters(
+  us,
+  parent = "",
+  noise_inherit_parent = FALSE,
+  alpha = 1,
+  ellipses = TRUE,
+  fixed = FALSE
+)
 }
 \arguments{
 \item{us}{umapscan object}

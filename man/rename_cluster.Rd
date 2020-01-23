@@ -14,8 +14,8 @@ rename_cluster(us, old, new)
 \item{new}{new cluster label}
 }
 \value{
-An updated umapscan object (invisibly). Note that the original umapscan object is
-modified in place.
+An updated umapscan object (invisibly). If two clusters have the same name after
+renaming, they are merged together.
 }
 \description{
 Rename an umapscan cluster

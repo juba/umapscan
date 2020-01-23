@@ -5,7 +5,7 @@
 \title{Return a qualitative color palette depending on the number of values
 of its \code{var} argument}
 \usage{
-qualitative_palette(var, label)
+qualitative_palette(var, label, type = c("color", "fill"))
 }
 \description{
 Return a qualitative color palette depending on the number of values

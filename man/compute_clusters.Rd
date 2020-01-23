@@ -4,8 +4,16 @@
 \alias{compute_clusters}
 \title{Compute DBSCAN clusters from a umapscan object}
 \usage{
-compute_clusters(us, parent, eps, minPts, graph = TRUE, alpha = 1,
-  ellipses = TRUE)
+compute_clusters(
+  us,
+  parent = "",
+  noise_only = FALSE,
+  eps,
+  minPts,
+  graph = TRUE,
+  alpha = 1,
+  ellipses = TRUE
+)
 }
 \arguments{
 \item{us}{umapscan object}

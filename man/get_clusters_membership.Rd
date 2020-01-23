@@ -4,7 +4,12 @@
 \alias{get_clusters_membership}
 \title{Get cluster membership for each observation of an umapscan object}
 \usage{
-get_clusters_membership(us, parent)
+get_clusters_membership(
+  us,
+  parent = "",
+  max_level,
+  noise_inherit_parent = FALSE
+)
 }
 \arguments{
 \item{us}{umapscan object to describe clusters}
