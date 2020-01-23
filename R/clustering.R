@@ -55,6 +55,11 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   clust[db$cluster == 0] <- "<Noise>"
   d_clust$cluster <- clust
 
+  if (parent == "") {
+    level <- 1
+  } else {
+    level <- us$clusters$level[us$clusters$to == parent] + 1
+  }
 
   for (cl in unique(clust)) {
     if (is.na(cl)) next
@@ -63,7 +68,8 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
       from = parent,
       to = cl,
       n = length(ids[select]),
-      ids = list(ids[select])
+      ids = list(ids[select]),
+      level = level
     )
     us$clusters <- bind_rows(us$clusters, line)
   }
@@ -72,7 +78,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   us$clusters$to[select] <- make.unique(us$clusters$to[select])
 
   if (graph) {
-    g <- plot_clusters(us, parent, alpha = alpha)
+    g <- plot_clusters(us, parent, alpha = alpha, fixed = TRUE)
     print(g)
   }
 
@@ -116,7 +122,9 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
   g <- ggplot(d_clust, aes(x=x, y=y, color = factor(cluster))) +
     geom_point(size = 1, alpha = alpha) +
     color_scale +
-    guides(colour = guide_legend(override.aes = list(alpha = 1)))
+    guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+    xlab("") +
+    ylab("")
 
   if (ellipses) {
     d_ellipses <- d_clust %>% drop_na(cluster)
@@ -175,7 +183,10 @@ describe_clusters <- function(us, parent = "", type = c("boxplot", "ridges")) {
     g <- ggplot(d_long, aes(x = cluster, y = value, fill = cluster)) +
       geom_boxplot(outlier.shape = NA) +
       fill_scale +
-      facet_wrap(~name, scales = "free_y")
+      facet_wrap(~name, scales = "free_y") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      xlab("") +
+      ylab("")
   }
 
   if (type == "ridges") {
@@ -215,10 +226,17 @@ describe_clusters <- function(us, parent = "", type = c("boxplot", "ridges")) {
 #' get_clusters_membership(us, parent = "3")
 
 
-get_clusters_membership <- function(us, parent = "", noise_inherit_parent = FALSE) {
+get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_parent = FALSE) {
 
   if (parent == "<Noise>") {
     stop("Can't get membership starting from a <Noise> node")
+  }
+
+  if (missing(max_level)) {
+    tree <- us$clusters
+  } else {
+    tree <- us$clusters %>%
+      filter(level <= max_level)
   }
 
   clusters <- rep(NA, nrow(us$data))
@@ -227,7 +245,7 @@ get_clusters_membership <- function(us, parent = "", noise_inherit_parent = FALS
     return(clusters)
   }
 
-  leaves <- get_leaves(us, node = parent)
+  leaves <- get_leaves(tree, node = parent)
 
   for (i in 1:nrow(leaves)) {
     leaf <- leaves[i,]
@@ -250,20 +268,20 @@ get_clusters_membership <- function(us, parent = "", noise_inherit_parent = FALS
 #' Get leaves from a node
 #' (not exported)
 
-get_leaves <- function(us, node = "", parent = NA) {
+get_leaves <- function(tree, node = "", parent = NA) {
 
   if (node == "<Noise>" && is.na(parent)) {
     stop("Can't get leaves from a <Noise> node.")
   }
 
-  children <- us$clusters$to[us$clusters$from == node]
+  children <- tree$to[tree$from == node]
 
   if (length(children) == 0) {
     return(tibble(from = parent, to = node))
   }
   leaves <- tibble(from = character(0), to = character(0))
   for(child in children) {
-    leaves <- bind_rows(leaves, get_leaves(us, child, parent = node))
+    leaves <- bind_rows(leaves, get_leaves(tree, child, parent = node))
   }
   return(leaves)
 }
@@ -352,7 +370,7 @@ rename_cluster <- function(us, old, new) {
       from = if_else(from == old, new, from),
       to = if_else(to == old, new, to),
     ) %>%
-    group_by(from, to) %>%
+    group_by(from, to, level) %>%
     summarise(
       n = sum(n),
       ids = list(unlist(c(ids)))
