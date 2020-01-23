@@ -1,7 +1,7 @@
 Package: umapscan
 Type: Package
 Title: UMAP and DBSCAN Pragmatic and Supervised clustering
-Date: 2019-12-01
+Date: 2020-01-23
 Version: 0.0.1
 Authors@R: c(person("Julien", "Barnier", email="julien.barnier@ens-lyon.fr",
     role=c("aut","cre")))
@@ -14,4 +14,19 @@ LazyData: true
 VignetteBuilder: knitr
 URL: https://github.com/juba/rmdformats
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
+Imports:
+  uwot,
+  dbscan,
+  ggplot2,
+  tibble,
+  dplyr,
+  shiny,
+  leaflet,
+  ggridges,
+  data.tree,
+  collapsibleTree
+Suggests:
+  knitr,
+  testthat,
+  rmarkdown
