@@ -68,7 +68,8 @@ new_umapscan <- function(
     from = character(0),
     to = character(0),
     n = integer(0),
-    ids = list()
+    ids = list(),
+    level = integer(0)
   )
 
   res <- list(
@@ -184,4 +185,98 @@ plot.umapscan <- function(
   g
 
 }
+
+
+
+#' Display an umapscan clustering as a leaflet map.
+#'
+#' @param us umapscan object to be plotted
+#' @param point_labels a character vector of point labels displayed
+#'   in a popup on hover. Can contain HTML.
+#'
+#' @export
+
+map_plot <- function(us, point_labels = NULL) {
+
+  ## Generate data for each clustering level
+  levels <- purrr::map(1:max(us$clusters$level), function(level) {
+
+    clusters <- get_clusters_membership(us, max_level = level)
+    clusters[clusters == "<Noise>"] <- NA
+    suppressWarnings({
+      pal <- leaflet::colorFactor(
+        palette = "Paired", domain = clusters, na.color = "white"
+      )
+    })
+
+    clusters_labels <- us$umap %>%
+      mutate(clust = clusters) %>%
+      drop_na(clust) %>%
+      group_by(clust) %>%
+      summarise(x = mean(x), y = mean(y))
+
+    list(clusters = clusters, palette = pal, clusters_labels = clusters_labels)
+  })
+
+  ## Map object
+  map <- leaflet::leaflet(
+    us$umap,
+    options = leaflet::leafletOptions(preferCanvas = TRUE)
+  )
+
+  ## Data point labels
+  if (!is.null(point_labels)) {
+    point_labels <- purrr::map(point_labels, htmltools::HTML)
+  }
+
+  # Add group layers
+  current_group <- 0
+  for (level in levels) {
+    current_group <- current_group + 1
+    group <- paste("Level", current_group)
+    suppressWarnings({
+      map <- map %>%
+        ## Add data points
+        leaflet::addCircleMarkers(
+          lng = ~x, lat = ~y,
+          stroke = FALSE,
+          radius = 5,
+          fillColor = level$palette(level$clusters),
+          fillOpacity = 0.5,
+          label = point_labels,
+          group = group
+        ) %>%
+        ## Add cluster points
+        leaflet::addCircleMarkers(
+          data = level$clusters_labels,
+          lng = ~x, lat = ~y,
+          label = ~clust,
+          labelOptions = leaflet::labelOptions(permanent = TRUE, direction = "top"),
+          fillColor = ~level$palette(clust),
+          fillOpacity = 0.9,
+          radius = 10,
+          weight = 2,
+          opacity = 1,
+          color = "white",
+          group = group
+        ) %>%
+        leaflet::hideGroup(group)
+    })
+  }
+
+  map <- map %>%
+    leaflet::showGroup("Level 1") %>%
+    leaflet::addLayersControl(
+      baseGroups = paste("Level", seq_along(levels)),
+      options = leaflet::layersControlOptions(collapsed = FALSE)
+    )
+
+  map
+
+}
+
+
+
+
+
 
