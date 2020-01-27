@@ -71,10 +71,10 @@ test_that("get cluster memberships", {
 })
 
 
-test_that("get cluster leaves", {
-  get_leaves(us)
-  get_leaves(us, node = "2")
-})
+# test_that("get cluster leaves", {
+#   get_leaves(us)
+#   get_leaves(us, node = "2")
+# })
 
 
 
