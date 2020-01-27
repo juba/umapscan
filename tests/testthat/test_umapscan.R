@@ -1,4 +1,4 @@
-context("umapscan class function")
+context("umapscan class functions")
 
 iris_num <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
 iris_sup <- iris[, "Species", drop=FALSE]
