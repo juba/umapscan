@@ -1,6 +1,11 @@
-
 #' Return a qualitative color palette depending on the number of values
 #' of its `var` argument
+#'
+#' @param var vector to compute palette values from
+#' @param label title of generated paletee
+#' @param type type of color palette
+#'
+#' @importFrom ggsci scale_color_d3 scale_fill_d3
 
 qualitative_palette <- function(var, label, type = c("color", "fill")) {
 

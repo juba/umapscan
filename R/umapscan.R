@@ -16,18 +16,22 @@
 #' - `umap` : results of UMAP embeddings
 #' - `data` : original numerical dataset
 #' - `data_sup` : supplementary dataset
-#' - `clusters` : a [data.tree::data.tree()] object of clusters
+#' - `clusters` : a tree-like hierarchy of clusters
 #' - `call` : function call
 #' - `seed` : the seed used for random numbers for all umap and dbscan operations
 #'
-#' @seealso [uwot::umap()], [plot.umapscan()]
+#' @seealso [uwot::umap()]
 #'
 #' @export
+#' @importFrom uwot umap
+#' @importFrom tibble tibble
 #'
 #' @examples
+#' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
 #' new_umapscan(iris_num, data_sup = iris_sup)
+
 
 new_umapscan <- function(
   d,
@@ -48,7 +52,7 @@ new_umapscan <- function(
 
   d_comp <- d
 
-  if (missing(seed)) { seed <- round(runif(1) * 100000) }
+  if (missing(seed)) { seed <- round(stats::runif(1) * 100000) }
 
   set.seed(seed)
   umap <- uwot::umap(
@@ -64,7 +68,7 @@ new_umapscan <- function(
     y = umap[,2],
   )
 
-  clusters <- tibble(
+  clusters <- tibble::tibble(
     from = character(0),
     to = character(0),
     n = integer(0),
@@ -87,40 +91,43 @@ new_umapscan <- function(
 }
 
 
-
-#' @param us umapscan object to be printed
+#' Print an umapscan object
+#'
+#' @param x umapscan object to be printed
 #' @param ... arguments passed to other methods
 #'
 #' @export
+#' @importFrom data.tree as.Node
 
-print.umapscan <- function(us, ...) {
+print.umapscan <- function(x, ...) {
 
-  cat("\nCall: ", paste(deparse(us$call), sep = "\n", collapse = "\n"),
+  cat("\nCall: ", paste(deparse(x$call), sep = "\n", collapse = "\n"),
     "\n\n", sep = "")
-  dims <- dim(us$data)
+  dims <- dim(x$data)
   cat("UMAP embeddings of a ", dims[1], "x", dims[2], " data frame\n", sep = "")
 
-  if (!is.null(us$data_sup)) {
-    dims_sup <- dim(us$data_sup)
+  if (!is.null(x$data_sup)) {
+    dims_sup <- dim(x$data_sup)
     cat ("with a ", dims_sup[1], "x", dims_sup[2],
       " data frame of supplementary data\n", sep = "")
   }
 
   cat("\nClusters :")
-  if (nrow(us$cluster) > 0) {
+  if (nrow(x$clusters) > 0) {
     cat("\n\n")
-    print(data.tree::as.Node(us$clusters, mode = "network"))
+    print(data.tree::as.Node(x$clusters, mode = "network"))
   } else {
     cat(" <none>\n\n")
   }
 
-  invisible(us)
+  invisible(x)
 }
 
 
 
-
-#' @param us umapscan object to be plotted
+#' Plot an umapscan object
+#'
+#' @param x umapscan object to be plotted
 #' @param color variable to highlight points (`tidylang` style). Must be a variable
 #'   of the `data` or `data_sup` elements of `us`
 #' @param palette `viridis` (for continuous `color`) or `brewer` (for categorical
@@ -132,6 +139,7 @@ print.umapscan <- function(us, ...) {
 #' @param ... arguments passed to other methods
 #'
 #' @examples
+#' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
 #' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1)
@@ -140,16 +148,17 @@ print.umapscan <- function(us, ...) {
 #'
 #' @export
 #' @import ggplot2
+#' @import dplyr
 
 plot.umapscan <- function(
-  us, color, palette, label = NULL, ellipses = FALSE, alpha = 0.2, fixed = FALSE
+  x, color, palette, label = NULL, ellipses = FALSE, alpha = 0.2, fixed = FALSE, ...
 ) {
 
-  if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
+  if (!inherits(x, "umapscan")) stop("`x` must be an object of class umapscan.")
 
-  d <- dplyr::bind_cols(us$umap, us$data, us$data_sup)
+  d <- dplyr::bind_cols(x$umap, x$data, x$data_sup)
 
-  g <- ggplot(d, aes(x = x, y = y)) +
+  g <- ggplot(d, aes(x = .data$x, y = .data$y)) +
     xlab("") +
     ylab("")
 
@@ -195,6 +204,9 @@ plot.umapscan <- function(
 #'   in a popup on hover. Can contain HTML.
 #'
 #' @export
+#' @importFrom purrr map
+#' @importFrom shiny HTML
+#' @import leaflet
 
 map_plot <- function(us, point_labels = NULL) {
 
@@ -211,9 +223,9 @@ map_plot <- function(us, point_labels = NULL) {
 
     clusters_labels <- us$umap %>%
       mutate(clust = clusters) %>%
-      drop_na(clust) %>%
-      group_by(clust) %>%
-      summarise(x = mean(x), y = mean(y))
+      tidyr::drop_na(.data$clust) %>%
+      group_by(.data$clust) %>%
+      summarise(x = mean(.data$x), y = mean(.data$y))
 
     list(clusters = clusters, palette = pal, clusters_labels = clusters_labels)
   })
@@ -226,7 +238,7 @@ map_plot <- function(us, point_labels = NULL) {
 
   ## Data point labels
   if (!is.null(point_labels)) {
-    point_labels <- purrr::map(point_labels, htmltools::HTML)
+    point_labels <- purrr::map(point_labels, shiny::HTML)
   }
 
   # Add group layers

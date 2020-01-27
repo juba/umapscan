@@ -18,14 +18,18 @@ RoxygenNote: 7.0.2
 Imports:
   uwot,
   dbscan,
-  ggplot2,
   tibble,
   dplyr,
-  shiny,
-  leaflet,
-  ggridges,
+  ggplot2,
+  tidyr,
+  purrr,
+  rlang,
   data.tree,
-  collapsibleTree
+  collapsibleTree,
+  leaflet,
+  ggsci,
+  ggridges,
+  shiny
 Suggests:
   knitr,
   testthat,

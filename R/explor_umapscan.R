@@ -1,6 +1,12 @@
+#' Launch a shiny interface for umapscan object and clustering exploration
+#'
+#' @param us an umapscan object
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
 #' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1337)
@@ -8,8 +14,12 @@
 #' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
 #' us <- compute_clusters(us, minPts = 3, eps = 0.3, parent = "1")
 #' explor_umapscan(us)
+#' }
 #'
 #' @import shiny
+#' @importFrom rlang sym
+#' @importFrom graphics plot
+#' @importFrom collapsibleTree renderCollapsibleTree collapsibleTreeOutput
 
 explor_umapscan <- function(us) {
 
@@ -117,7 +127,7 @@ explor_umapscan <- function(us) {
 
       output$umap_plot <- renderPlot({
         var <- rlang::sym(input$var)
-        plot(us, color = !!var,
+        graphics::plot(us, color = !!var,
           alpha = input$alpha_data,
           ellipses = input$ellipses_data,
           fixed = input$fixed_data)
@@ -139,3 +149,35 @@ explor_umapscan <- function(us) {
     }
   )
 }
+
+
+#' Convert a clusters element of an umapscan object to a collapsibleTree
+#'
+#' @param us an umapscan object
+#' @param max_label_length maximum length of tree node labels
+#'
+#' @importFrom data.tree as.Node
+#' @importFrom collapsibleTree collapsibleTree
+
+umapscan_tree <- function(us, max_label_length = 100) {
+
+  tree <- data.tree::as.Node(us$clusters, mode = "network")
+
+  tree$Do(function(node) {
+    if (nchar(node$name) > max_label_length) {
+      node$name <- substr(node$name, 1, max_label_length)
+      node$name <- paste0(node$name, "...")
+    }
+  })
+
+  collapsibleTree::collapsibleTree(
+    tree,
+    collapse = FALSE,
+    tooltip = TRUE,
+    attribute = "n",
+    inputId = "node",
+    inputClickedId = "clicked",
+  )
+
+}
+
