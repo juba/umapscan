@@ -18,17 +18,23 @@ plot_clusters(
 
 \item{parent}{name of the parent cluster}
 
+\item{noise_inherit_parent}{if TRUE, 'Noise' points are given their parent cluster
+membership}
+
 \item{alpha}{point transparency for clusters plot}
 
 \item{ellipses}{if TRUE, plot confidence ellipses around clusters}
+
+\item{fixed}{if TRUE, force coord_fixed on plot}
 }
 \description{
 Plot clusters of an umapscan object
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7, graph = FALSE)
+us <- compute_clusters(us, minPts = 3, eps = 0.5, graph = FALSE)
 plot_clusters(us, alpha = 1)
 us <- compute_clusters(us, minPts = 3, eps = 0.45, graph = FALSE, parent = "3")
 plot_clusters(us, alpha = 0.5, ellipses = FALSE, parent = "3")

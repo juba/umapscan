@@ -17,9 +17,10 @@ describe_clusters(us, parent = "", type = c("boxplot", "ridges"))
 Describe clusters of an umapscan object
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 describe_clusters(us)
 us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
 describe_clusters(us, type = "ridge")

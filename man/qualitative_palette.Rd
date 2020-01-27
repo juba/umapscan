@@ -7,6 +7,13 @@ of its \code{var} argument}
 \usage{
 qualitative_palette(var, label, type = c("color", "fill"))
 }
+\arguments{
+\item{var}{vector to compute palette values from}
+
+\item{label}{title of generated paletee}
+
+\item{type}{type of color palette}
+}
 \description{
 Return a qualitative color palette depending on the number of values
 of its \code{var} argument

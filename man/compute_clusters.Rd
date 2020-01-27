@@ -20,6 +20,8 @@ compute_clusters(
 
 \item{parent}{name of the parent cluster}
 
+\item{noise_only}{only compute clusters for current 'Noise' points}
+
 \item{eps}{\code{eps} argument passed to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}}
 
 \item{minPts}{\code{minPts} argument passed to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}}
@@ -35,17 +37,18 @@ Returns an updated \code{umapscan} object, and optionally displays a clusters pl
 }
 \description{
 This function runs DBSCAN with the specified arguments to compute new clusters
-on a umapscan object. Only point which don't have an already validated cluster
+on a umapscan object. Only points which don't have an already validated cluster
 are taken into account.
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 compute_clusters(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
 
 }
 \seealso{
-\code{\link[=new_umapscan]{new_umapscan()}}, \code{\link[=describe_clusters]{describe_clusters()}}, \code{\link[=get_cluster]{get_cluster()}}, \code{\link[=rename_cluster]{rename_cluster()}},
+\code{\link[=new_umapscan]{new_umapscan()}}, \code{\link[=describe_clusters]{describe_clusters()}}, \code{\link[=get_cluster_data]{get_cluster_data()}}, \code{\link[=rename_cluster]{rename_cluster()}},
 \code{\link[=plot_clusters]{plot_clusters()}}, \code{\link[=get_clusters_membership]{get_clusters_membership()}}, \code{\link[=remove_cluster]{remove_cluster()}}
 }

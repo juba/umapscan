@@ -40,7 +40,7 @@ A list of class \code{umapscan} with the following components :
 \item \code{umap} : results of UMAP embeddings
 \item \code{data} : original numerical dataset
 \item \code{data_sup} : supplementary dataset
-\item \code{clusters} : a \code{\link[data.tree:data.tree]{data.tree::data.tree()}} object of clusters
+\item \code{clusters} : a tree-like hierarchy of clusters
 \item \code{call} : function call
 \item \code{seed} : the seed used for random numbers for all umap and dbscan operations
 }
@@ -49,10 +49,11 @@ A list of class \code{umapscan} with the following components :
 Compute UMAP embeddings from a numerical data frame
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 iris_sup <- iris \%>\% select(Species)
 new_umapscan(iris_num, data_sup = iris_sup)
 }
 \seealso{
-\code{\link[uwot:umap]{uwot::umap()}}, \code{\link[=plot.umapscan]{plot.umapscan()}}
+\code{\link[uwot:umap]{uwot::umap()}}
 }

@@ -21,9 +21,10 @@ renaming, they are merged together.
 Rename an umapscan cluster
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 rename_cluster(us, "1", "Cluster 1")
 us
 }

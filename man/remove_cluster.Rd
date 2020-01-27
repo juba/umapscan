@@ -11,7 +11,10 @@ remove_cluster(us, cluster, rm_root = FALSE, noise_only = FALSE)
 
 \item{cluster}{label of the cluster to remove}
 
-\item{rm_root}{if TRUE,}
+\item{rm_root}{if TRUE, also remove the root cluster node. Otherwise, only remove
+its children}
+
+\item{noise_only}{if TRUE, only remove 'Noise' nodes}
 }
 \value{
 An updated umapscan object (invisibly). Note that the original umapscan object is
@@ -21,9 +24,10 @@ modified in place.
 If the cluster has children, they will be removed too.
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 us <- compute_clusters(us, parent = "3" ,minPts = 3, eps = 0.45)
 remove_cluster(us, "3_1")
 us

@@ -2,12 +2,15 @@
 % Please edit documentation in R/clustering.R
 \name{get_ids}
 \alias{get_ids}
-\title{Get ids from a node name
-(not exported)}
+\title{Get ids from a node name}
 \usage{
 get_ids(us, node)
 }
+\arguments{
+\item{us}{an umapscan object}
+
+\item{node}{node to get ids from}
+}
 \description{
 Get ids from a node name
-(not exported)
 }

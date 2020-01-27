@@ -2,12 +2,15 @@
 % Please edit documentation in R/clustering.R
 \name{get_noise_ids}
 \alias{get_noise_ids}
-\title{Get ids from a <Noise> child of a node
-(not exported)}
+\title{Get ids from a 'Noise' child of a node}
 \usage{
 get_noise_ids(us, node)
 }
+\arguments{
+\item{us}{an umapscan object}
+
+\item{node}{node to get child 'Noise' ids from}
+}
 \description{
-Get ids from a <Noise> child of a node
-(not exported)
+Get ids from a 'Noise' child of a node
 }

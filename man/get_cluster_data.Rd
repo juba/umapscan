@@ -18,10 +18,11 @@ get_cluster_data(us, cluster)
 Get an umapscan cluster data
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 iris_sup <- iris \%>\% select(Species)
 us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 get_cluster_data(us, "1")
 }
 \seealso{

@@ -15,6 +15,11 @@ get_clusters_membership(
 \item{us}{umapscan object to describe clusters}
 
 \item{parent}{name of the parent cluster}
+
+\item{max_level}{get membership at most this level deep}
+
+\item{noise_inherit_parent}{if TRUE, 'Noise' points are given their parent cluster
+membership}
 }
 \description{
 The clusters taken into account are all the "leaves" of the object
@@ -22,9 +27,10 @@ clusters tree. If a \code{parent} is specified, only the leaves of its
 subtree are taken.
 }
 \examples{
+library(dplyr)
 iris_num <- iris \%>\% select_if(is.numeric)
 us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-us <- compute_clusters(us, minPts = 3, eps = 0.7)
+us <- compute_clusters(us, minPts = 3, eps = 0.5)
 get_clusters_membership(us)
 us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
 get_clusters_membership(us)

@@ -2,12 +2,19 @@
 % Please edit documentation in R/clustering.R
 \name{get_leaves}
 \alias{get_leaves}
-\title{Get leaves from a node
-(not exported)}
+\title{Get leaves from a node}
 \usage{
 get_leaves(tree, node = "", parent = NA)
 }
+\arguments{
+\item{tree}{tree object, such as a \code{clusters} element of a \code{umapscan} object}
+
+\item{node}{node to find leaves from}
+
+\item{parent}{optional parent of \code{node}
+
+\code{parent} is used during computation to differentiate different 'Noise' nodes.}
+}
 \description{
 Get leaves from a node
-(not exported)
 }
