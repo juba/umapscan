@@ -33,4 +33,5 @@ Imports:
 Suggests:
   knitr,
   testthat,
-  rmarkdown
+  rmarkdown,
+  vdiffr
