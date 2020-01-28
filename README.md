@@ -19,4 +19,3 @@ You've been warned !
 ## TODO
 
 - noise_inherit_parent should return <Noise> if no no-noise parent
-- add test on reproducibility of results
