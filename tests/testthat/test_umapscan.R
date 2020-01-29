@@ -15,14 +15,14 @@ test_that("new_umapscan results are ok", {
   expect_equal(us$data_sup, iris_sup)
   expect_equal(dim(us$cluster), c(0, 5))
   expect_equal(dim(us$umap), c(nrow(iris_num), 2))
-  set.seed(1337)
+  set.seed(1337, kind = "default", normal.kind = "default", sample.kind = "default")
   umap <- uwot::umap(iris_num)
   expect_equal(tibble::tibble(x = umap[,1], y = umap[,2]), us$umap)
 })
 
 test_that("new_umapscan results with scale=TRUE are ok", {
   us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 24312, scale = TRUE)
-  set.seed(24312)
+  set.seed(24312, kind = "default", normal.kind = "default", sample.kind = "default")
   umap <- uwot::umap(dplyr::mutate_all(iris_num, base::scale))
   expect_equal(tibble::tibble(x = umap[,1], y = umap[,2]), us$umap)
 })

@@ -54,7 +54,7 @@ new_umapscan <- function(
 
   if (missing(seed)) { seed <- round(stats::runif(1) * 100000) }
 
-  set.seed(seed)
+  set.seed(seed, kind = "default", normal.kind = "default", sample.kind = "default")
   umap <- uwot::umap(
     d_comp,
     n_neighbors = n_neighbors,

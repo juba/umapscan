@@ -43,7 +43,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   us <- remove_cluster(us, cluster = parent, noise_only = noise_only)
 
   d_clust <- us$umap %>% slice(ids)
-  set.seed(us$seed)
+  set.seed(us$seed, kind = "default", normal.kind = "default", sample.kind = "default")
   if (missing(eps)) {
     message("Missing eps, hdbscan performed instead of dbscan")
     db <- dbscan::hdbscan(d_clust, minPts = minPts)
