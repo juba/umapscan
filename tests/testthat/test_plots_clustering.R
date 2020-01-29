@@ -2,6 +2,7 @@ context("umapscan clustering plots")
 
 skip_on_cran()
 skip_on_travis()
+skip_on_ci()
 
 iris_num <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
 iris_sup <- iris[, "Species", drop=FALSE]
