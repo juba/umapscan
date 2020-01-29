@@ -1,0 +1,5 @@
+destination: docs
+url: https://juba.github.io/umapscan/
+template:
+  params:
+    bootswatch: cosmo

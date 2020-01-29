@@ -3,3 +3,6 @@
 travail.R
 .travis.yml
 ^\.github/workflows/R-CMD-check\.yaml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
