@@ -56,7 +56,7 @@ test_that("new_umapscan results are reproducible", {
       6.74697742762796, 3.54316410518693, 6.51514238248617, 3.56464170478963,
       5.2160293513385)), class = "data.frame", row.names = c(NA, -50L
       ))
-  expect_equal(us$umap %>% dplyr::slice(1:50) %>% data.frame, result)
+  expect_equal(us$umap %>% dplyr::slice(1:50) %>% data.frame, result, tolerance = 0.001)
 })
 
 test_that("set.seed is ok", {
