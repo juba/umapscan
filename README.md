@@ -3,6 +3,7 @@
 [![CRAN status](https://www.r-pkg.org/badges/version-ago/umapscan)](https://cran.r-project.org/package=umapscan)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![Travis build status](https://travis-ci.org/juba/umapscan.svg?branch=master)](https://travis-ci.org/juba/umapscan)
+[![R build status](https://github.com/juba/umapscan/workflows/R-CMD-check/badge.svg)](https://github.com/juba/umapscan)
 
 This is an helper package for using UMAP + DBSCAN in R.
 

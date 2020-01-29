@@ -12,9 +12,8 @@ License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-URL: https://github.com/juba/rmdformats
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.2
+URL: https://github.com/juba/umapscan
+BugReports: https://github.com/juba/umapscan/issues
 Imports:
   uwot,
   dbscan,
@@ -35,3 +34,5 @@ Suggests:
   testthat,
   rmarkdown,
   vdiffr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.0.2
