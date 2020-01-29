@@ -59,6 +59,16 @@ test_that("new_umapscan results are reproducible", {
   expect_equal(us$umap %>% dplyr::slice(1:50) %>% data.frame, result)
 })
 
+test_that("set.seed is ok", {
+  set.seed(556677)
+  x <- runif(1)
+  expect_equal(x, 0.05051134, tolerance = 0.00000001)
+  y <- rnorm(1)
+  expect_equal(y, 1.970592, tolerance = 0.000001)
+  z <- runif(1)
+  expect_equal(z, 0.3479608, tolerance = 0.0000001)
+})
+
 
 
 
