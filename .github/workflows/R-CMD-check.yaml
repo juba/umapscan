@@ -20,7 +20,7 @@ jobs:
         config:
         - { os: windows-latest, r: 'release'}
         - { os: macOS-latest, r: 'release'}
-        - { os: macOS-latest, r: 'devel'}
+        - { os: debian, r: 'devel'}
         - { os: ubuntu-18.04, r: 'release'}
 
     env:
