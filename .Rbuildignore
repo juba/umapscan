@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 travail.R
 .travis.yml
+^\.github/workflows/R-CMD-check\.yaml$
