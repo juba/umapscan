@@ -96,6 +96,7 @@ test_that("get_cluster data", {
   expect_error(get_cluster_data(us, "<Noise>"), "Can't get data for a <Noise> cluster.")
 })
 
+
 test_that("rename_cluster", {
   # saveRDS(rename_cluster(us, "2_1", "foo")$clusters %>% tidyr::unnest(ids), "tests/values/rename1.rds")
   expect_equal(
@@ -108,10 +109,47 @@ test_that("rename_cluster", {
     get_ids(out, "2_1"),
     c(get_ids(us, "2_1"), get_ids(us, "2_2"))
   )
+  out <- us %>% rename_cluster("3_3", "<Noise>")
+  expect_setequal(
+    umapscan:::get_noise_ids(out, "3"),
+    c(umapscan:::get_noise_ids(us, "3"), umapscan:::get_ids(us, "3_3"))
+  )
   expect_error(
     rename_cluster(us, "3_2", "2_1"),
     "Can't rename a cluster with the same name as another cluster with another parent."
   )
+})
+
+test_that("remove_cluster", {
+  expect_error(remove_cluster(us))
+  expect_error(remove_cluster(us, "<Noise>"), "Can't remove a <Noise> cluster.")
+
+  out <- umapscan:::remove_cluster(us, "2_2", rm_root = FALSE)
+  expect_equal(
+    out$clusters %>% tidyr::unnest(ids),
+    us$clusters %>% tidyr::unnest(ids)
+  )
+  out <- umapscan:::remove_cluster(us, "1", rm_root = FALSE)
+  expect_equal(
+    out$clusters %>% tidyr::unnest(ids),
+    us$clusters %>% tidyr::unnest(ids)
+  )
+
+  out <- umapscan:::remove_cluster(us, "3", rm_root = FALSE)
+  out <- umapscan:::remove_cluster(us, "3", rm_root = TRUE)
+  out <- umapscan:::remove_cluster(us, "1", rm_root = TRUE)
+
+  out <- umapscan:::remove_cluster(us, "2_2", rm_root = TRUE)
+})
+
+test_that("remove_noise_cluster", {
+  expect_error(remove_noise_cluster(us))
+  expect_error(
+    remove_noise_cluster(us, "<Noise>"),
+    "Can't remove a <Noise> cluster from a <Noise> parent."
+  )
+
+  # TODO
 })
 
 
