@@ -96,7 +96,22 @@ test_that("get_cluster data", {
   expect_error(get_cluster_data(us, "<Noise>"), "Can't get data for a <Noise> cluster.")
 })
 
-
-
+test_that("rename_cluster", {
+  # saveRDS(rename_cluster(us, "2_1", "foo")$clusters %>% tidyr::unnest(ids), "tests/values/rename1.rds")
+  expect_equal(
+    rename_cluster(us, "2_1", "foo")$clusters %>% tidyr::unnest(ids),
+    readRDS("../values/rename1.rds")
+  )
+  expect_error(rename_cluster(us, "<Noise>", "foo"))
+  out <- us %>% rename_cluster("2_2", "2_1")
+  expect_equal(
+    get_ids(out, "2_1"),
+    c(get_ids(us, "2_1"), get_ids(us, "2_2"))
+  )
+  expect_error(
+    rename_cluster(us, "3_2", "2_1"),
+    "Can't rename a cluster with the same name as another cluster with another parent."
+  )
+})
 
 
