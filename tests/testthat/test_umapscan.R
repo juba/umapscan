@@ -15,15 +15,15 @@ test_that("new_umapscan results are ok", {
   expect_equal(us$data_sup, iris_sup)
   expect_equal(dim(us$cluster), c(0, 5))
   expect_equal(dim(us$umap), c(nrow(iris_num), 2))
-  set.seed(1337, kind = "default", normal.kind = "default", sample.kind = "default")
-  umap <- uwot::umap(iris_num)
+  set.seed(1337)
+  umap <- uwot::umap(iris_num, n_sgd_threads = 0)
   expect_equal(tibble::tibble(x = umap[,1], y = umap[,2]), us$umap)
 })
 
 test_that("new_umapscan results with scale=TRUE are ok", {
   us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 24312, scale = TRUE)
-  set.seed(24312, kind = "default", normal.kind = "default", sample.kind = "default")
-  umap <- uwot::umap(dplyr::mutate_all(iris_num, base::scale))
+  set.seed(24312)
+  umap <- uwot::umap(dplyr::mutate_all(iris_num, base::scale),  n_sgd_threads = 0)
   expect_equal(tibble::tibble(x = umap[,1], y = umap[,2]), us$umap)
 })
 
@@ -48,15 +48,15 @@ test_that("set.seed is ok", {
 
 test_that("base umapscan with seed is ok", {
   set.seed(82223)
-  umap <- uwot::umap(USArrests)
+  umap <- uwot::umap(USArrests, n_sgd_threads = 0)
   # saveRDS(umap, "tests/values/umapscan2.rds")
   expect_equal(
     umap,
     readRDS("../values/umapscan2.rds")
   )
   set.seed(82223)
-  umap_pca <- uwot::umap(USArrests, init = "pca")
-    # saveRDS(umap_pca, "tests/values/umapscan3.rds")
+  umap_pca <- uwot::umap(USArrests, init = "pca", n_sgd_threads = 0)
+  # saveRDS(umap_pca, "tests/values/umapscan3.rds")
   expect_equal(
     umap_pca,
     readRDS("../values/umapscan3.rds")

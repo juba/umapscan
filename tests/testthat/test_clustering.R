@@ -124,6 +124,9 @@ test_that("remove_cluster", {
   expect_error(remove_cluster(us))
   expect_error(remove_cluster(us, "<Noise>"), "Can't remove a <Noise> cluster.")
 
+  ## No test with rm_root = TRUE because the function should not
+  ## be called directly with this argument.
+
   out <- umapscan:::remove_cluster(us, "2_2", rm_root = FALSE)
   expect_equal(
     out$clusters %>% tidyr::unnest(ids),
@@ -134,12 +137,11 @@ test_that("remove_cluster", {
     out$clusters %>% tidyr::unnest(ids),
     us$clusters %>% tidyr::unnest(ids)
   )
-
   out <- umapscan:::remove_cluster(us, "3", rm_root = FALSE)
-  out <- umapscan:::remove_cluster(us, "3", rm_root = TRUE)
-  out <- umapscan:::remove_cluster(us, "1", rm_root = TRUE)
-
-  out <- umapscan:::remove_cluster(us, "2_2", rm_root = TRUE)
+  expect_equal(
+    dim(out$clusters %>% dplyr::filter(from == "3")),
+    c(0, 5)
+  )
 })
 
 test_that("remove_noise_cluster", {
