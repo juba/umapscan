@@ -137,13 +137,13 @@ test_that("base umapscan with seed is ok", {
 
 test_that("uwot version is the same", {
   uwot_version <- installed.packages()["uwot",]
-  res <- c(Package = "uwot", LibPath = "/home/julien/r/x86_64-pc-linux-gnu-library/3.6",
+  res <- c(Package = "uwot",
     Version = "0.1.5", Priority = NA_character_, Depends = "Matrix", Imports = "Rcpp, methods, FNN, RSpectra, RcppAnnoy (>= 0.0.11),\nRcppParallel, irlba",
     LinkingTo = "Rcpp, RcppProgress, RcppParallel, RcppAnnoy, dqrng",
     Suggests = "testthat, covr", Enhances = NA_character_, License = "GPL-3",
     License_is_FOSS = NA_character_, License_restricts_use = NA_character_, OS_type = NA_character_,
     MD5sum = NA_character_, NeedsCompilation = "yes", Built = "3.6.2")
-  expect_equal(uwot_version, res)
+  expect_equal(uwot_version[names(uwot_version) != "LibPath"], res)
   })
 
 
