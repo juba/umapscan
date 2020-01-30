@@ -11,7 +11,7 @@ get_leaves(tree, node = "", parent = NA)
 
 \item{node}{node to find leaves from}
 
-\item{parent}{optional parent of \code{node}
+\item{parent}{optional parent of \code{node} (should not be used directly, only for recursive call).
 
 \code{parent} is used during computation to differentiate different 'Noise' nodes.}
 }

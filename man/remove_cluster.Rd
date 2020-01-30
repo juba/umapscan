@@ -12,7 +12,7 @@ remove_cluster(us, cluster, rm_root = FALSE)
 \item{cluster}{label of the cluster to remove}
 
 \item{rm_root}{if TRUE, also remove the root cluster node. Otherwise, only remove
-its children}
+its children (should not be used directly, only for recursive call).}
 }
 \value{
 An updated umapscan object.
@@ -30,7 +30,4 @@ remove_cluster(us, "3_1")
 us
 remove_cluster(us, "3")
 us
-}
-\seealso{
-\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=describe_clusters]{describe_clusters()}}
 }

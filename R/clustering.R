@@ -285,7 +285,7 @@ get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_pa
 #'
 #' @param tree tree object, such as a `clusters` element of a `umapscan` object
 #' @param node node to find leaves from
-#' @param parent optional parent of `node`
+#' @param parent optional parent of `node` (should not be used directly, only for recursive call).
 #'
 #' `parent` is used during computation to differentiate different 'Noise' nodes.
 #'
@@ -452,10 +452,7 @@ rename_cluster <- function(us, old, new) {
 #' @param us umapscan object
 #' @param cluster label of the cluster to remove
 #' @param rm_root if TRUE, also remove the root cluster node. Otherwise, only remove
-#'   its children
-#'
-#' @seealso
-#' [compute_clusters()], [describe_clusters()]
+#'   its children (should not be used directly, only for recursive call).
 #'
 #' @return
 #' An updated umapscan object.
