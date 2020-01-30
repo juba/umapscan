@@ -324,6 +324,10 @@ get_ids <- function(us, node) {
     return(1:nrow(us$data))
   }
 
+  if (node == "<Noise>") {
+    stop("Can't get ids from a <Noise> node.")
+  }
+
   us$clusters %>%
     filter(.data$to == node) %>%
     pull(.data$ids) %>%
