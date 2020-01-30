@@ -60,7 +60,7 @@ test_that("get_leaves", {
 })
 
 test_that("get_ids", {
-  expect_error(umapscan:::get_ids(us))
+  expect_error(get_ids(us))
   expect_equal(
     get_ids(us, "2"),
     c(2L, 3L, 4L, 9L, 10L, 13L, 14L, 26L, 30L, 31L, 35L, 36L, 39L,
@@ -75,6 +75,12 @@ test_that("get_ids", {
   expect_error(get_ids(us, "<Noise>"), "Can't get ids from a <Noise> node.")
 })
 
+test_that("get_noise_ids", {
+  expect_error(umapscan:::get_noise_ids(us))
+  expect_equal(get_noise_ids(us, "3"), 78)
+  expect_null(get_noise_ids(us, "1"))
+  expect_error(get_noise_ids(us, "<Noise>"), "Can't get ids from a <Noise> node.")
+})
 
 
 
