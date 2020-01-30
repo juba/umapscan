@@ -83,6 +83,20 @@ test_that("get_noise_ids", {
 })
 
 
+test_that("get_cluster data", {
+  expect_error(get_cluster_data(us))
+  expect_equal(
+    dim(get_cluster_data(us, "2")),
+    c(17, 6)
+  )
+  expect_equal(
+    get_cluster_data(us, "3_4")$umapscan_cluster,
+    rep("3_4", 7)
+  )
+  expect_error(get_cluster_data(us, "<Noise>"), "Can't get data for a <Noise> cluster.")
+})
+
+
 
 
 
