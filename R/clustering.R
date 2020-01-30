@@ -377,6 +377,10 @@ get_noise_ids <- function(us, node) {
 
 get_cluster_data <- function(us, cluster) {
 
+  if (cluster == "<Noise>") {
+    stop("Can't get data for a <Noise> cluster.")
+  }
+
   ids <- get_ids(us, cluster)
   d <- dplyr::bind_cols(us$data_sup, us$data)
   d %>%
