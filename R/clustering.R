@@ -18,7 +18,7 @@
 #'
 #' @seealso
 #' [new_umapscan()], [describe_clusters()], [get_cluster_data()], [rename_cluster()],
-#' [plot_clusters()], [get_clusters_membership()], [remove_cluster()]
+#' [plot_clusters()], [get_clusters_membership()]
 #'
 #' @export
 #'
@@ -40,7 +40,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   } else {
     ids <- get_ids(us, parent)
   }
-  us <- remove_cluster(us, cluster = parent, noise_only = noise_only)
+  us <- remove_noise_cluster(us, parent)
 
   d_clust <- us$umap %>% slice(ids)
   set.seed(us$seed, kind = "default", normal.kind = "default", sample.kind = "default")
@@ -154,7 +154,7 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #'
 #' @seealso
 #' [compute_clusters()], [get_cluster_data()], [get_clusters_membership()],
-#' [rename_cluster()], [remove_cluster()]
+#' [rename_cluster()]
 #'
 #' @export
 #' @importFrom tidyr pivot_longer
@@ -227,7 +227,7 @@ describe_clusters <- function(us, parent = "", type = c("boxplot", "ridges")) {
 #'   membership
 #'
 #' @seealso
-#' [compute_clusters()], [get_cluster_data()], [rename_cluster()], [remove_cluster()]
+#' [compute_clusters()], [get_cluster_data()], [rename_cluster()]
 #'
 #' @export
 #'
@@ -421,7 +421,7 @@ rename_cluster <- function(us, old, new) {
   }
 
   ## Test for same new name with another parent
-  if (new != "<Noise" && new %in% us$clusters$to) {
+  if (new != "<Noise>" && new %in% us$clusters$to) {
     parent_old <- us$clusters$from[us$clusters$to == old]
     parent_new <- us$clusters$from[us$clusters$to == new]
     if (parent_old != parent_new) {
@@ -453,15 +453,12 @@ rename_cluster <- function(us, old, new) {
 #' @param cluster label of the cluster to remove
 #' @param rm_root if TRUE, also remove the root cluster node. Otherwise, only remove
 #'   its children
-#' @param noise_only if TRUE, only remove 'Noise' nodes
 #'
 #' @seealso
 #' [compute_clusters()], [describe_clusters()]
 #'
 #' @return
-#' An updated umapscan object (invisibly). Note that the original umapscan object is
-#' modified in place.
-#' @export
+#' An updated umapscan object.
 #' @importFrom purrr pwalk
 #'
 #' @examples
@@ -475,17 +472,16 @@ rename_cluster <- function(us, old, new) {
 #' remove_cluster(us, "3")
 #' us
 
-remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
+remove_cluster <- function(us, cluster, rm_root = FALSE) {
 
-  if (noise_only) {
-    us$clusters <- us$clusters %>%
-      filter(!(.data$from == .data$cluster & .data$to == "<Noise>"))
-    return(us)
+  if (cluster == "<Noise>") {
+    stop("Can't remove a <Noise> cluster.")
   }
 
   from_lines <- us$clusters %>%
     filter(.data$from == cluster) %>%
     select(this_from = .data$from, this_to = .data$to)
+
   purrr::pwalk(from_lines, function(this_from, this_to) {
     ## Ensure we only remove one <Noise> node
     if (this_to == "<Noise>") {
