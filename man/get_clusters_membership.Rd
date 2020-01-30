@@ -37,5 +37,5 @@ get_clusters_membership(us)
 get_clusters_membership(us, parent = "3")
 }
 \seealso{
-\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=get_cluster_data]{get_cluster_data()}}, \code{\link[=rename_cluster]{rename_cluster()}}, \code{\link[=remove_cluster]{remove_cluster()}}
+\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=get_cluster_data]{get_cluster_data()}}, \code{\link[=rename_cluster]{rename_cluster()}}
 }

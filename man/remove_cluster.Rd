@@ -4,7 +4,7 @@
 \alias{remove_cluster}
 \title{Remove a cluster from an umapscan object}
 \usage{
-remove_cluster(us, cluster, rm_root = FALSE, noise_only = FALSE)
+remove_cluster(us, cluster, rm_root = FALSE)
 }
 \arguments{
 \item{us}{umapscan object}
@@ -13,12 +13,9 @@ remove_cluster(us, cluster, rm_root = FALSE, noise_only = FALSE)
 
 \item{rm_root}{if TRUE, also remove the root cluster node. Otherwise, only remove
 its children}
-
-\item{noise_only}{if TRUE, only remove 'Noise' nodes}
 }
 \value{
-An updated umapscan object (invisibly). Note that the original umapscan object is
-modified in place.
+An updated umapscan object.
 }
 \description{
 If the cluster has children, they will be removed too.

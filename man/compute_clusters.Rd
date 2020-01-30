@@ -50,5 +50,5 @@ compute_clusters(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
 }
 \seealso{
 \code{\link[=new_umapscan]{new_umapscan()}}, \code{\link[=describe_clusters]{describe_clusters()}}, \code{\link[=get_cluster_data]{get_cluster_data()}}, \code{\link[=rename_cluster]{rename_cluster()}},
-\code{\link[=plot_clusters]{plot_clusters()}}, \code{\link[=get_clusters_membership]{get_clusters_membership()}}, \code{\link[=remove_cluster]{remove_cluster()}}
+\code{\link[=plot_clusters]{plot_clusters()}}, \code{\link[=get_clusters_membership]{get_clusters_membership()}}
 }
