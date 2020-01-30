@@ -416,6 +416,19 @@ get_cluster_data <- function(us, cluster) {
 
 rename_cluster <- function(us, old, new) {
 
+  if (old == "<Noise>") {
+    stop("Can't rename a <Noise> cluster.")
+  }
+
+  ## Test for same new name with another parent
+  if (new != "<Noise" && new %in% us$clusters$to) {
+    parent_old <- us$clusters$from[us$clusters$to == old]
+    parent_new <- us$clusters$from[us$clusters$to == new]
+    if (parent_old != parent_new) {
+      stop("Can't rename a cluster with the same name as another cluster with another parent.")
+    }
+  }
+
   us$clusters <- us$clusters %>%
     mutate(
       from = if_else(.data$from == old, new, .data$from),
