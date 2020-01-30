@@ -505,6 +505,24 @@ remove_cluster <- function(us, cluster, rm_root = FALSE, noise_only = FALSE) {
 }
 
 
+#' Remove a 'Noise' cluster from an umapscan object
+#'
+#' @param us umapscan object
+#' @param parent parent of the 'Noise' cluster to remove
+
+remove_noise_cluster <- function(us, parent) {
+
+  if (parent == "<Noise>") {
+    stop("Can't remove a <Noise> cluster from a <Noise> parent.")
+  }
+
+  us$clusters <- us$clusters %>%
+    filter(!(.data$from == parent & .data$to == "<Noise>"))
+
+  return(us)
+}
+
+
 
 #' Reinit all clusters of an umapscan object
 #'
