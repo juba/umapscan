@@ -61,6 +61,7 @@ new_umapscan <- function(
     min_dist = min_dist,
     metric = metric,
     scale = scale,
+    n_sgd_threads = 0,
     ...
   )
   umap <- tibble::tibble(
