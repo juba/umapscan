@@ -1,11 +1,11 @@
 Package: umapscan
 Type: Package
 Title: UMAP and DBSCAN Pragmatic and Supervised clustering
-Date: 2020-01-23
+Date: 2020-03-19
 Version: 0.0.1
-Authors@R: c(person("Julien", "Barnier", email="julien.barnier@ens-lyon.fr",
+Authors@R: c(person("Julien", "Barnier", email="julien.barnier@cnrs.fr",
     role=c("aut","cre")))
-Maintainer: Julien Barnier <julien.barnier@ens-lyon.fr>
+Maintainer: Julien Barnier <julien.barnier@cnrs.fr>
 Description: Set of tools for dataset exploration using UMAP
   embeddings and DBSCAN iterative clustering.
 License: GPL (>= 2)
@@ -35,4 +35,4 @@ Suggests:
   rmarkdown,
   vdiffr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
