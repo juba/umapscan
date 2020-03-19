@@ -17,7 +17,7 @@ BugReports: https://github.com/juba/umapscan/issues
 Depends:
   R (>= 3.5.0)
 Imports:
-  uwot,
+  uwot (>= 0.1.8),
   dbscan,
   tibble,
   dplyr,
