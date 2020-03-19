@@ -6,9 +6,9 @@ skip_on_ci()
 
 iris_num <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
 iris_sup <- iris[, "Species", drop=FALSE]
-us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = FALSE)
-us <- compute_clusters(us, minPts = 3, eps = 0.6, graph = FALSE)
-us <- compute_clusters(us, minPts = 3, parent = "3", eps = 0.3, graph = FALSE)
+us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = TRUE)
+us <- compute_clusters(us, minPts = 3, eps = 1, graph = FALSE)
+us <- compute_clusters(us, minPts = 3, parent = "3", eps = 0.4, graph = FALSE)
 
 cluster_plot <- plot_clusters(us)
 cluster_plot_noise <- plot_clusters(us, noise_inherit_parent = TRUE)

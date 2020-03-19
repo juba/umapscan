@@ -15,3 +15,4 @@ us_plot_full <- plot(us, color = Species, label = "test", ellipses = TRUE, alpha
 vdiffr::expect_doppelganger("Base umapscan plot", us_plot)
 vdiffr::expect_doppelganger("Colored umapscan plot", us_plot_color)
 vdiffr::expect_doppelganger("Full umapscan plot", us_plot_full)
+
