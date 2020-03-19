@@ -62,6 +62,7 @@ new_umapscan <- function(
     metric = metric,
     scale = scale,
     n_sgd_threads = 0,
+    approx_pow = TRUE,
     ...
   )
   umap <- tibble::tibble(
