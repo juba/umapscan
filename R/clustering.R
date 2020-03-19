@@ -37,10 +37,13 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 
   if (noise_only) {
     ids <- get_noise_ids(us, parent)
+    us <- remove_noise_cluster(us, parent)
   } else {
     ids <- get_ids(us, parent)
+    us <- remove_cluster(us, parent)
   }
-  us <- remove_noise_cluster(us, parent)
+
+
 
   d_clust <- us$umap %>% slice(ids)
   set.seed(us$seed, kind = "default", normal.kind = "default", sample.kind = "default")
