@@ -459,6 +459,7 @@ rename_cluster <- function(us, old, new) {
 #'
 #' @return
 #' An updated umapscan object.
+#'
 #' @importFrom purrr pwalk
 #'
 #' @examples
@@ -471,6 +472,8 @@ rename_cluster <- function(us, old, new) {
 #' us
 #' remove_cluster(us, "3")
 #' us
+#'
+#' @export
 
 remove_cluster <- function(us, cluster, rm_root = FALSE) {
 
