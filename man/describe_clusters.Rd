@@ -4,17 +4,41 @@
 \alias{describe_clusters}
 \title{Describe clusters of an umapscan object}
 \usage{
-describe_clusters(us, parent = "", type = c("boxplot", "ridges"))
+describe_clusters(
+  us,
+  parent = "",
+  type = c("boxplot", "ridges", "barplot", "keyness"),
+  position = "fill",
+  keyness_measure = c("chi2", "lr", "exact", "pmi"),
+  n_terms = 20,
+  text_size = 10,
+  free_scale = TRUE
+)
 }
 \arguments{
 \item{us}{umapscan object to describe clusters}
 
 \item{parent}{name of the parent cluster}
 
-\item{type}{plot type, either \code{"boxplot"} or \code{"ridges"}}
+\item{type}{plot type, either \code{"boxplot"}, \code{"ridges"}, \code{"barplot"} or \code{"keyness"}}
+
+\item{position}{if type = "barplot", \code{position} argument to add to \code{geom_bar}}
+
+\item{keyness_measure}{if type = "keyness", passed as \code{measure} argument to \code{quanteda::textstat_keyness}}
+
+\item{n_terms}{if type = "keyness", number of terms to show}
+
+\item{text_size}{if type = "keyness", plot text size}
+
+\item{free_scale}{if type = "keyness", don't use the same scale on each barplot}
 }
 \description{
 Describe clusters of an umapscan object
+}
+\details{
+"boxplot" and "ridges" are suitable for continuous variables, "barplot" is better for
+binary categorical ones. "keyness" is suitable when the original data is a document-feature
+matrix.
 }
 \examples{
 library(dplyr)
