@@ -66,8 +66,8 @@ new_umapscan <- function(
     ...
   )
   umap <- tibble::tibble(
-    x = umap[,1],
-    y = umap[,2],
+    .umap_x = umap[,1],
+    .umap_y = umap[,2],
   )
 
   clusters <- tibble::tibble(
@@ -160,7 +160,7 @@ plot.umapscan <- function(
 
   d <- dplyr::bind_cols(x$umap, x$data, x$data_sup)
 
-  g <- ggplot(d, aes(x = .data$x, y = .data$y)) +
+  g <- ggplot(d, aes(x = .data$.umap_x, y = .data$.umap_y)) +
     xlab("") +
     ylab("")
 
@@ -227,7 +227,7 @@ map_plot <- function(us, point_labels = NULL) {
       mutate(clust = clusters) %>%
       tidyr::drop_na(.data$clust) %>%
       group_by(.data$clust) %>%
-      summarise(x = mean(.data$x), y = mean(.data$y))
+      summarise(x = mean(.data$.umap_x), y = mean(.data$.umap_y))
 
     list(clusters = clusters, palette = pal, clusters_labels = clusters_labels)
   })
@@ -252,7 +252,7 @@ map_plot <- function(us, point_labels = NULL) {
       map <- map %>%
         ## Add data points
         leaflet::addCircleMarkers(
-          lng = ~x, lat = ~y,
+          lng = ~.umap_x, lat = ~.umap_y,
           stroke = FALSE,
           radius = 5,
           fillColor = level$palette(level$clusters),
@@ -263,7 +263,7 @@ map_plot <- function(us, point_labels = NULL) {
         ## Add cluster points
         leaflet::addCircleMarkers(
           data = level$clusters_labels,
-          lng = ~x, lat = ~y,
+          lng = ~.umap_x, lat = ~.umap_y,
           label = ~clust,
           labelOptions = leaflet::labelOptions(permanent = TRUE, direction = "top"),
           fillColor = ~level$palette(clust),

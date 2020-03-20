@@ -129,7 +129,7 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
   d_clust$cluster <- clust
   color_scale <- qualitative_palette(clust, label = "Cluster")
 
-  g <- ggplot(d_clust, aes(x = .data$x, y = .data$y, color = factor(.data$cluster))) +
+  g <- ggplot(d_clust, aes(x = .data$.umap_x, y = .data$.umap_y, color = factor(.data$cluster))) +
     geom_point(size = 1, alpha = alpha) +
     color_scale +
     guides(colour = guide_legend(override.aes = list(alpha = 1))) +
