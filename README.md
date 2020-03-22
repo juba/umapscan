@@ -14,9 +14,3 @@ This package can't / must not be used right now :
 
 You've been warned !
 
-
-
-## TODO
-
-- noise_inherit_parent should return <Noise> if no no-noise parent
-- split describe_clusters(type = "keyness") into another function to avoid TableGrob return
