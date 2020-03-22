@@ -155,6 +155,8 @@ get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_pa
     }
   }
 
+  clusters[clusters == ""] <- "<Noise>"
+
   clusters
 }
 
