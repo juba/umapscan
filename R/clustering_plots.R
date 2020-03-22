@@ -160,43 +160,69 @@ describe_clusters <- function(
 
   if (type == "keyness") {
 
-    if (!requireNamespace("gridExtra", quietly = TRUE)) {
-      stop("Package \"gridExtra\" needed for this function to work. Please install it.",
-        call. = FALSE)
-    }
-
-    tabs <- keyness_stats(
-      clusters,
-      d %>% select(-.data$document),
+    g <- describe_clusters_keyness(
+      d, clusters,
       keyness_measure = keyness_measure,
       n_terms = n_terms,
-      show_negative = TRUE
+      text_size = text_size,
+      free_scale = free_scale
     )
 
-    stat_col <- switch(
-      keyness_measure,
-      "chi2" = "chi2",
-      "lr" = "G2",
-      "exact" = "or",
-      "pmi" = "pmi"
-    )
+    return(invisible(g))
 
-    if (free_scale) {
-      maxs <- purrr::map_dbl(tabs, ~{max(abs(.x[[stat_col]]), na.rm = TRUE)})
-      range <- c(0, max(maxs))
-    } else {
-      range <- NULL
-    }
-
-    plots <- purrr::imap(tabs, function(tab, name) {
-      keyness_barplot(tab, range = range, title = name,
-        stat_col = stat_col, n_terms = n_terms, text_size = text_size)
-    })
-
-    lay <- matrix(seq_along(tabs), nrow = 1)
-    g <- gridExtra::grid.arrange(grobs = plots, layout_matrix = lay)
   }
 
   g
 
 }
+
+
+
+
+## Keyness-based clusters description
+
+describe_clusters_keyness <- function(
+  d, clusters,
+  keyness_measure = c("chi2", "lr", "exact", "pmi"),
+  n_terms = 20,
+  text_size = 10,
+  free_scale = TRUE) {
+
+  if (!requireNamespace("gridExtra", quietly = TRUE)) {
+    stop("Package \"gridExtra\" needed for this function to work. Please install it.",
+      call. = FALSE)
+  }
+
+  tabs <- keyness_stats(
+    clusters,
+    d %>% select(-.data$document),
+    keyness_measure = keyness_measure,
+    n_terms = n_terms,
+    show_negative = TRUE
+  )
+
+  stat_col <- switch(
+    keyness_measure,
+    "chi2" = "chi2",
+    "lr" = "G2",
+    "exact" = "or",
+    "pmi" = "pmi"
+  )
+
+  if (free_scale) {
+    maxs <- purrr::map_dbl(tabs, ~{max(abs(.x[[stat_col]]), na.rm = TRUE)})
+    range <- c(0, max(maxs))
+  } else {
+    range <- NULL
+  }
+
+  plots <- purrr::imap(tabs, function(tab, name) {
+    keyness_barplot(tab, range = range, title = name,
+      stat_col = stat_col, n_terms = n_terms, text_size = text_size)
+  })
+
+  lay <- matrix(seq_along(tabs), nrow = 1)
+  g <- gridExtra::grid.arrange(grobs = plots, layout_matrix = lay)
+
+}
+
