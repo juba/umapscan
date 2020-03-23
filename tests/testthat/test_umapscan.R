@@ -9,6 +9,14 @@ test_that("new_umapscan with wrong arguments throws error", {
   expect_error(new_umapscan(d = iris_num, data_sup = iris_sup[-1, ]))
 })
 
+test_that("new_umapscan with matrix argument", {
+  d <- data.frame(x = 1:5, y = 1:5, z = 1:5)
+  m <- matrix(c(1:5, 1:5, 1:5), ncol = 3, dimnames = list(1:5, c("x", "y", "z")))
+  usd <- new_umapscan(d, seed = 12, n_neighbors = 3, min_dist = 0.1)
+  usm <- new_umapscan(m, seed = 12, n_neighbors = 3, min_dist = 0.1)
+  expect_equal(usd$umap, usm$umap)
+})
+
 test_that("new_umapscan results are ok", {
   us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = FALSE)
   expect_equal(us$data, iris_num)

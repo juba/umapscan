@@ -1,6 +1,6 @@
 #' Compute UMAP embeddings from a numerical data frame
 #'
-#' @param d a data frame of numeric variables
+#' @param d a numerical matrix or data frame
 #' @param n_neighbors `n_neighbors` argument passed to [uwot::umap()]
 #' @param min_dist `min_dist` argument passed to [uwot::umap()]
 #' @param metric `metric` argument passed to [uwot::umap()]
@@ -44,7 +44,8 @@ new_umapscan <- function(
   ...
 ) {
 
-  if (!inherits(d, "data.frame")) stop("d must be a numerical data frame.")
+  if (inherits(d, "matrix")) d <- as.data.frame.matrix(d)
+  if (!inherits(d, "data.frame")) stop("d must be a numerical matrix or data frame.")
   if (!is.null(data_sup)) {
     if (!inherits(data_sup, "data.frame")) stop("data_sup must be a data frame.")
     if (nrow(data_sup) != nrow(d)) stop("d and data_sup must have the same number of rows.")
