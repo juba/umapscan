@@ -1,6 +1,6 @@
 #' Compute UMAP embeddings from a numerical data frame
 #'
-#' @param d a numerical matrix or data frame
+#' @param d a numerical matrix or data frame, or quanteda dfm
 #' @param n_neighbors `n_neighbors` argument passed to [uwot::umap()]
 #' @param min_dist `min_dist` argument passed to [uwot::umap()]
 #' @param metric `metric` argument passed to [uwot::umap()]
@@ -44,8 +44,19 @@ new_umapscan <- function(
   ...
 ) {
 
+  # quanteda dfm input
+  if (inherits(d, "dfm")) {
+    if (!requireNamespace("quanteda", quietly = TRUE)) {
+      stop("Package \"quanteda\" needed for this function to work. Please install it.",
+        call. = FALSE)
+    }
+    d <- quanteda::convert(d, "data.frame")
+  }
+  # matrix input
   if (inherits(d, "matrix")) d <- as.data.frame.matrix(d)
+  # else
   if (!inherits(d, "data.frame")) stop("d must be a numerical matrix or  data frame.")
+  # data_sup
   if (!is.null(data_sup)) {
     if (!inherits(data_sup, "data.frame")) stop("data_sup must be a data frame.")
     if (nrow(data_sup) != nrow(d)) stop("d and data_sup must have the same number of rows.")
