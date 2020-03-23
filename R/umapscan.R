@@ -45,7 +45,7 @@ new_umapscan <- function(
 ) {
 
   if (inherits(d, "matrix")) d <- as.data.frame.matrix(d)
-  if (!inherits(d, "data.frame")) stop("d must be a numerical matrix or data frame.")
+  if (!inherits(d, "data.frame")) stop("d must be a numerical matrix or  data frame.")
   if (!is.null(data_sup)) {
     if (!inherits(data_sup, "data.frame")) stop("data_sup must be a data frame.")
     if (nrow(data_sup) != nrow(d)) stop("d and data_sup must have the same number of rows.")
@@ -176,7 +176,9 @@ plot.umapscan <- function(
 
   g <- g + geom_point(aes(color = {{color}}), alpha = alpha)
 
-  col_var <- d %>% dplyr::pull({{color}})
+  col_var <- d %>%
+    mutate(.umapscan_col_var = {{color}}) %>%
+    pull(.data$.umapscan_col_var)
 
   if (is.numeric(col_var)) {
     if (missing(palette)) palette <- "inferno"
