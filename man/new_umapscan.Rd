@@ -16,7 +16,7 @@ new_umapscan(
 )
 }
 \arguments{
-\item{d}{a data frame of numeric variables}
+\item{d}{a numerical matrix or data frame, or quanteda dfm}
 
 \item{n_neighbors}{\code{n_neighbors} argument passed to \code{\link[uwot:umap]{uwot::umap()}}}
 
