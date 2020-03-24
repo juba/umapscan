@@ -50,7 +50,9 @@ new_umapscan <- function(
       stop("Package \"quanteda\" needed for this function to work. Please install it.",
         call. = FALSE)
     }
-    d <- quanteda::convert(d, "data.frame")
+    ## convert to matrix first to avoid the creation of a possibly
+    ## duplicated "document" column
+    d <- data.frame(quanteda::convert(d, "matrix"))
   }
   # matrix input
   if (inherits(d, "matrix")) d <- as.data.frame.matrix(d)
