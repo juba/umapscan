@@ -65,6 +65,8 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #' @param n_terms if type = "keyness", number of terms to show
 #' @param text_size if type = "keyness", plot text size
 #' @param free_scale if type = "keyness", don't use the same scale on each barplot
+#' @param show_negative if TRUE and type = "keyness", show negative keyness features
+
 #'
 #' @details
 #' "boxplot" and "ridges" are suitable for continuous variables, "barplot" is better for
@@ -99,7 +101,8 @@ describe_clusters <- function(
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
   n_terms = 20,
   text_size = 10,
-  free_scale = TRUE) {
+  free_scale = TRUE,
+  show_negative = TRUE) {
 
   type <- match.arg(type)
   keyness_measure <- match.arg(keyness_measure)
@@ -165,7 +168,8 @@ describe_clusters <- function(
       keyness_measure = keyness_measure,
       n_terms = n_terms,
       text_size = text_size,
-      free_scale = free_scale
+      free_scale = free_scale,
+      show_negative = show_negative
     )
 
     return(invisible(g))
@@ -186,7 +190,8 @@ describe_clusters_keyness <- function(
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
   n_terms = 20,
   text_size = 10,
-  free_scale = TRUE) {
+  free_scale = TRUE,
+  show_negative = TRUE) {
 
   if (!requireNamespace("gridExtra", quietly = TRUE)) {
     stop("Package \"gridExtra\" needed for this function to work. Please install it.",
@@ -198,7 +203,7 @@ describe_clusters_keyness <- function(
     d,
     keyness_measure = keyness_measure,
     n_terms = n_terms,
-    show_negative = TRUE
+    show_negative = show_negative
   )
 
   stat_col <- switch(
