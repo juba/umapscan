@@ -195,7 +195,7 @@ describe_clusters_keyness <- function(
 
   tabs <- keyness_stats(
     clusters,
-    d %>% select(-.data$document),
+    d,
     keyness_measure = keyness_measure,
     n_terms = n_terms,
     show_negative = TRUE
