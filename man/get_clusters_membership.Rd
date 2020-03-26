@@ -8,7 +8,8 @@ get_clusters_membership(
   us,
   parent = "",
   max_level,
-  noise_inherit_parent = FALSE
+  noise_inherit_parent = FALSE,
+  labels = TRUE
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ get_clusters_membership(
 
 \item{noise_inherit_parent}{if TRUE, 'Noise' points are given their parent cluster
 membership}
+
+\item{if}{TRUE, use label when possible instead of identifier as cluster names}
 }
 \description{
 The clusters taken into account are all the "leaves" of the object

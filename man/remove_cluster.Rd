@@ -4,12 +4,12 @@
 \alias{remove_cluster}
 \title{Remove a cluster from an umapscan object}
 \usage{
-remove_cluster(us, cluster, rm_root = FALSE)
+remove_cluster(us, id, rm_root = FALSE)
 }
 \arguments{
 \item{us}{umapscan object}
 
-\item{cluster}{label of the cluster to remove}
+\item{id}{id of the cluster to remove}
 
 \item{rm_root}{if TRUE, also remove the root cluster node. Otherwise, only remove
 its children (should not be used directly, only for recursive call).}

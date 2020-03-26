@@ -2,7 +2,7 @@
 % Please edit documentation in R/clustering.R
 \name{rename_cluster}
 \alias{rename_cluster}
-\title{Rename an umapscan cluster}
+\title{Rename an umapscan cluster identifier}
 \usage{
 rename_cluster(us, old, new)
 }
@@ -11,14 +11,14 @@ rename_cluster(us, old, new)
 
 \item{old}{current cluster identifier}
 
-\item{new}{new cluster label}
+\item{new}{new cluster identifier}
 }
 \value{
-An updated umapscan object (invisibly). If two clusters have the same name after
+An updated umapscan object (invisibly). If two clusters have the same identifier after
 renaming, they are merged together.
 }
 \description{
-Rename an umapscan cluster
+Rename an umapscan cluster identifier
 }
 \examples{
 library(dplyr)
@@ -29,5 +29,5 @@ rename_cluster(us, "1", "Cluster 1")
 us
 }
 \seealso{
-\code{\link[=compute_clusters]{compute_clusters()}}, \code{\link[=describe_clusters]{describe_clusters()}}
+\code{\link[=label_cluster]{label_cluster()}}
 }

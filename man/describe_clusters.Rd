@@ -7,6 +7,7 @@
 describe_clusters(
   us,
   parent = "",
+  labels = TRUE,
   type = c("boxplot", "ridges", "barplot", "keyness"),
   position = "fill",
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
@@ -20,6 +21,8 @@ describe_clusters(
 \item{us}{umapscan object to describe clusters}
 
 \item{parent}{name of the parent cluster}
+
+\item{labels}{if TRUE, use cluster label instead of id if available}
 
 \item{type}{plot type, either \code{"boxplot"}, \code{"ridges"}, \code{"barplot"} or \code{"keyness"}}
 

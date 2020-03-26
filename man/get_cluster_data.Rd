@@ -4,12 +4,12 @@
 \alias{get_cluster_data}
 \title{Get an umapscan cluster data}
 \usage{
-get_cluster_data(us, cluster)
+get_cluster_data(us, id)
 }
 \arguments{
 \item{us}{umapscan object}
 
-\item{cluster}{cluster to retrieve}
+\item{id}{cluster id to retrieve}
 }
 \value{
 1 data frame with the \code{data} and \code{data_sup} variables of the cluster observations

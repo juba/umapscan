@@ -10,7 +10,8 @@ plot_clusters(
   noise_inherit_parent = FALSE,
   alpha = 1,
   ellipses = TRUE,
-  fixed = FALSE
+  fixed = FALSE,
+  labels = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ membership}
 \item{ellipses}{if TRUE, plot confidence ellipses around clusters}
 
 \item{fixed}{if TRUE, force coord_fixed on plot}
+
+\item{labels}{if TRUE, use cluster label instead of id if available}
 }
 \description{
 Plot clusters of an umapscan object

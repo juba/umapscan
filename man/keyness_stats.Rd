@@ -29,18 +29,6 @@ keyness_stats(
 \description{
 Generate cluster keyness statistics from a clustering result
 }
-\examples{
-\dontrun{
-library(quanteda)
-corpus <- data_corpus_inaugural
-dtm <- dfm(corpus, remove = stopwords("en"), tolower = TRUE, remove_punct = TRUE)
-dtm <- dfm_trim(dtm, min_termfreq = 3)
-res <- rainette(dtm, k = 3)
-groups <- cutree_rainette(res, k = 3)
-rainette_stats(groups, dtm)
-}
-
-}
 \seealso{
 \code{\link[quanteda:textstat_keyness]{quanteda::textstat_keyness()}}
 }

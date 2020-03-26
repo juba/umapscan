@@ -4,12 +4,12 @@
 \alias{get_members}
 \title{Get members from a node name}
 \usage{
-get_members(us, node)
+get_members(us, id)
 }
 \arguments{
 \item{us}{an umapscan object}
 
-\item{node}{node to get members from}
+\item{id}{cluster id to get members from}
 }
 \description{
 Get members from a node name
