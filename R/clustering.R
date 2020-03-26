@@ -105,6 +105,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #' @param max_level get membership at most this level deep
 #' @param noise_inherit_parent if TRUE, 'Noise' points are given their parent cluster
 #'   membership
+#' @param if TRUE, use label when possible instead of identifier as cluster names
 #'
 #' @seealso
 #' [compute_clusters()], [get_cluster_data()], [rename_cluster()]
@@ -122,7 +123,8 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #' get_clusters_membership(us, parent = "3")
 
 
-get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_parent = FALSE) {
+get_clusters_membership <- function(us, parent = "", max_level,
+  noise_inherit_parent = FALSE, labels = TRUE) {
 
   if (parent == "<Noise>") {
     stop("Can't get membership starting from a <Noise> node")
@@ -154,6 +156,12 @@ get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_pa
     } else {
       clusters[get_members(us, leaf$id)] <- leaf$id
     }
+  }
+
+  ## If labels, replace ids with their labels
+  if (labels) {
+    cluster_labels <- us$clusters$label[match(clusters, us$clusters$id)]
+    clusters <- ifelse(is.na(cluster_labels) | cluster_labels == "", clusters, cluster_labels)
   }
 
   clusters[clusters == ""] <- "<Noise>"
@@ -196,22 +204,22 @@ get_leaves <- function(tree, node = "", parent = NA) {
 #' Get members from a node name
 #'
 #' @param us an umapscan object
-#' @param node node to get members from
+#' @param id cluster id to get members from
 #'
 #' @import dplyr
 
-get_members <- function(us, node) {
+get_members <- function(us, id) {
 
-  if (node == "") {
+  if (id == "") {
     return(1:nrow(us$data))
   }
 
-  if (node == "<Noise>") {
+  if (id == "<Noise>") {
     stop("Can't get members from a <Noise> node.")
   }
 
   us$clusters %>%
-    filter(.data$id == node) %>%
+    filter(.data$id == .env$id) %>%
     pull(.data$members) %>%
     unlist
 }
@@ -239,7 +247,7 @@ get_noise_members <- function(us, node) {
 #' Get an umapscan cluster data
 #'
 #' @param us umapscan object
-#' @param cluster cluster to retrieve
+#' @param id cluster id to retrieve
 #'
 #' @seealso
 #' [compute_clusters()], [describe_clusters()], [rename_cluster()]
@@ -257,34 +265,37 @@ get_noise_members <- function(us, node) {
 #' us <- compute_clusters(us, minPts = 3, eps = 0.5)
 #' get_cluster_data(us, "1")
 
-get_cluster_data <- function(us, cluster) {
+get_cluster_data <- function(us, id) {
 
-  if (cluster == "<Noise>") {
+  id <- as.character(id)
+
+  if (id == "<Noise>") {
     stop("Can't get data for a <Noise> cluster.")
   }
 
-  members <- get_members(us, cluster)
+  members <- get_members(us, id)
   d <- dplyr::bind_cols(us$data_sup, us$data)
   d %>%
     dplyr::slice(members) %>%
-    dplyr::mutate(umapscan_cluster = cluster)
+    dplyr::mutate(umapscan_cluster = id)
 
 }
 
 
 
-#' Rename an umapscan cluster
+#' Rename an umapscan cluster identifier
 #'
 #' @param us umapscan object
 #' @param old current cluster identifier
-#' @param new new cluster label
+#' @param new new cluster identifier
 #'
 #' @seealso
-#' [compute_clusters()], [describe_clusters()]
+#' [label_cluster()]
 #'
 #' @return
-#' An updated umapscan object (invisibly). If two clusters have the same name after
+#' An updated umapscan object (invisibly). If two clusters have the same identifier after
 #' renaming, they are merged together.
+#'
 #' @export
 #' @import dplyr
 #'
@@ -327,12 +338,51 @@ rename_cluster <- function(us, old, new) {
 }
 
 
+#' Label an umapscan cluster
+#'
+#' @param us umapscan object
+#' @param id cluster identifier
+#' @param label cluster label
+#'
+#' @seealso
+#' [rename_cluster()]
+#'
+#' @return
+#' An updated umapscan object (invisibly).
+#'
+#' @export
+#' @import dplyr
+#'
+#' @examples
+#' library(dplyr)
+#' iris_num <- iris %>% select_if(is.numeric)
+#' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
+#' us <- compute_clusters(us, minPts = 3, eps = 0.5, graph = FALSE)
+#' us <- rename_cluster(us, "1", "clust_1")
+#' us <- label_cluster(us, "clust_1", "Cluster 1")
+#' us$clusters
+
+
+label_cluster <- function(us, id, label) {
+
+  id <- as.character(id)
+
+  if (label %in% us$clusters$label) {
+    warning("A cluster already exists with the same label.")
+  }
+
+  us$clusters$label[us$clusters$id == id] <- label
+
+  us
+}
+
+
 #' Remove a cluster from an umapscan object
 #'
 #' If the cluster has children, they will be removed too.
 #'
 #' @param us umapscan object
-#' @param cluster label of the cluster to remove
+#' @param id id of the cluster to remove
 #' @param rm_root if TRUE, also remove the root cluster node. Otherwise, only remove
 #'   its children (should not be used directly, only for recursive call).
 #'
@@ -354,14 +404,14 @@ rename_cluster <- function(us, old, new) {
 #'
 #' @export
 
-remove_cluster <- function(us, cluster, rm_root = FALSE) {
+remove_cluster <- function(us, id, rm_root = FALSE) {
 
-  if (cluster == "<Noise>") {
+  if (id == "<Noise>") {
     stop("Can't remove a <Noise> cluster.")
   }
 
   parent_lines <- us$clusters %>%
-    filter(.data$parent == cluster) %>%
+    filter(.data$parent == .env$id) %>%
     select(this_parent = .data$parent, this_id = .data$id)
 
   purrr::pwalk(parent_lines, function(this_parent, this_id) {
@@ -375,7 +425,7 @@ remove_cluster <- function(us, cluster, rm_root = FALSE) {
   })
 
   if (rm_root) {
-    id_lines <- us$clusters$id == cluster
+    id_lines <- us$clusters$id == id
     us$clusters <- us$clusters %>% filter(!id_lines)
   }
 

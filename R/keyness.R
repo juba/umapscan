@@ -10,16 +10,6 @@
 #' @seealso [quanteda::textstat_keyness()]
 #'
 #' @export
-#' @examples
-#' \dontrun{
-#' library(quanteda)
-#' corpus <- data_corpus_inaugural
-#' dtm <- dfm(corpus, remove = stopwords("en"), tolower = TRUE, remove_punct = TRUE)
-#' dtm <- dfm_trim(dtm, min_termfreq = 3)
-#' res <- rainette(dtm, k = 3)
-#' groups <- cutree_rainette(res, k = 3)
-#' rainette_stats(groups, dtm)
-#' }
 #'
 #' @importFrom purrr map
 
@@ -74,6 +64,7 @@ keyness_stats <- function(
   tabs
 
 }
+
 
 ## Generate a "terms bar plot", based on terms keyness for a group
 

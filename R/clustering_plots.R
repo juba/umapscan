@@ -7,6 +7,7 @@
 #' @param alpha point transparency for clusters plot
 #' @param ellipses if TRUE, plot confidence ellipses around clusters
 #' @param fixed if TRUE, force coord_fixed on plot
+#' @param labels if TRUE, use cluster label instead of id if available
 #'
 #' @seealso
 #' [compute_clusters()], [describe_clusters()]
@@ -25,9 +26,10 @@
 #' @import ggplot2
 #' @importFrom tidyr drop_na
 
-plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE) {
+plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE, labels = TRUE) {
 
-  clust <- get_clusters_membership(us, parent, noise_inherit_parent = noise_inherit_parent)
+  clust <- get_clusters_membership(us, parent,
+    noise_inherit_parent = noise_inherit_parent, labels = labels)
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
   d_clust <- us$umap[!is.na(clust),]
   clust <- clust[!is.na(clust)]
@@ -59,6 +61,7 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #'
 #' @param us umapscan object to describe clusters
 #' @param parent name of the parent cluster
+#' @param labels if TRUE, use cluster label instead of id if available
 #' @param type plot type, either `"boxplot"`, `"ridges"`, `"barplot"` or `"keyness"`
 #' @param position if type = "barplot", `position` argument to add to `geom_bar`
 #' @param keyness_measure if type = "keyness", passed as `measure` argument to `quanteda::textstat_keyness`
@@ -95,7 +98,7 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #' describe_clusters(us, parent = "3")
 
 describe_clusters <- function(
-  us, parent = "",
+  us, parent = "", labels = TRUE,
   type = c("boxplot", "ridges", "barplot", "keyness"),
   position = "fill",
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
@@ -107,7 +110,7 @@ describe_clusters <- function(
   type <- match.arg(type)
   keyness_measure <- match.arg(keyness_measure)
 
-  clusters <- get_clusters_membership(us, parent, noise_inherit_parent = FALSE)
+  clusters <- get_clusters_membership(us, parent, noise_inherit_parent = FALSE, labels = labels)
   clusters[clusters == "<Noise>"] <- NA
   select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)
