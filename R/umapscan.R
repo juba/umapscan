@@ -55,13 +55,21 @@ new_umapscan <- function(
     d <- data.frame(quanteda::convert(d, "matrix"))
   }
   # matrix input
-  if (inherits(d, "matrix")) d <- as.data.frame.matrix(d)
+  if (inherits(d, "matrix")) {
+    d <- as.data.frame.matrix(d)
+  }
   # else
-  if (!inherits(d, "data.frame")) stop("d must be a numerical matrix or  data frame.")
+  if (!inherits(d, "data.frame")) {
+    stop("d must be a numerical matrix or data frame.")
+  }
   # data_sup
   if (!is.null(data_sup)) {
     if (!inherits(data_sup, "data.frame")) stop("data_sup must be a data frame.")
     if (nrow(data_sup) != nrow(d)) stop("d and data_sup must have the same number of rows.")
+  }
+  # check if numerical
+  if (!all(apply(d, 2, is.numeric))) {
+    warning("some columns are not numerical.")
   }
 
   d_comp <- d
