@@ -85,11 +85,12 @@ new_umapscan <- function(
   )
 
   clusters <- tibble::tibble(
-    from = character(0),
-    to = character(0),
+    parent = character(0),
+    id = character(0),
     n = integer(0),
-    ids = list(),
-    level = integer(0)
+    members = list(),
+    level = integer(0),
+    label = character(0)
   )
 
   res <- list(

@@ -36,16 +36,16 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
 
   if (noise_only) {
-    ids <- get_noise_ids(us, parent)
+    members <- get_noise_members(us, parent)
     us <- remove_noise_cluster(us, parent)
   } else {
-    ids <- get_ids(us, parent)
+    members <- get_members(us, parent)
     us <- remove_cluster(us, parent)
   }
 
 
 
-  d_clust <- us$umap %>% slice(ids)
+  d_clust <- us$umap %>% slice(members)
   set.seed(us$seed, kind = "default", normal.kind = "default", sample.kind = "default")
   if (missing(eps)) {
     message("Missing eps, hdbscan performed instead of dbscan")
@@ -63,24 +63,25 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   if (parent == "") {
     level <- 1
   } else {
-    level <- us$clusters$level[us$clusters$to == parent] + 1
+    level <- us$clusters$level[us$clusters$id == parent] + 1
   }
 
   for (cl in unique(clust)) {
     if (is.na(cl)) next
     select <- (clust == cl) & !is.na(clust)
     line <- tibble::tibble(
-      from = parent,
-      to = cl,
-      n = length(ids[select]),
-      ids = list(ids[select]),
-      level = level
+      parent = parent,
+      id = cl,
+      n = length(members[select]),
+      members = list(members[select]),
+      level = level,
+      label = ""
     )
     us$clusters <- dplyr::bind_rows(us$clusters, line)
   }
 
-  select <- us$clusters$to != "<Noise>"
-  us$clusters$to[select] <- make.unique(us$clusters$to[select])
+  select <- us$clusters$id != "<Noise>"
+  us$clusters$id[select] <- make.unique(us$clusters$id[select])
 
   if (graph) {
     g <- plot_clusters(us, parent, alpha = alpha, fixed = TRUE)
@@ -144,14 +145,14 @@ get_clusters_membership <- function(us, parent = "", max_level, noise_inherit_pa
 
   for (i in 1:nrow(leaves)) {
     leaf <- leaves[i,]
-    if (leaf$to == "<Noise>") {
+    if (leaf$id == "<Noise>") {
       if (noise_inherit_parent) {
-        clusters[get_noise_ids(us, leaf$from)] <- leaf$from
+        clusters[get_noise_members(us, leaf$parent)] <- leaf$parent
       } else {
-        clusters[get_noise_ids(us, leaf$from)] <- leaf$to
+        clusters[get_noise_members(us, leaf$parent)] <- leaf$id
       }
     } else {
-      clusters[get_ids(us, leaf$to)] <- leaf$to
+      clusters[get_members(us, leaf$id)] <- leaf$id
     }
   }
 
@@ -179,12 +180,12 @@ get_leaves <- function(tree, node = "", parent = NA) {
     stop("Can't get leaves from a <Noise> node.")
   }
 
-  children <- tree$to[tree$from == node]
+  children <- tree$id[tree$parent == node]
 
   if (length(children) == 0) {
-    return(tibble::tibble(from = parent, to = node))
+    return(tibble::tibble(parent = parent, id = node))
   }
-  leaves <- tibble::tibble(from = character(0), to = character(0))
+  leaves <- tibble::tibble(parent = character(0), id = character(0))
   for(child in children) {
     leaves <- dplyr::bind_rows(leaves, get_leaves(tree, child, parent = node))
   }
@@ -192,45 +193,45 @@ get_leaves <- function(tree, node = "", parent = NA) {
 }
 
 
-#' Get ids from a node name
+#' Get members from a node name
 #'
 #' @param us an umapscan object
-#' @param node node to get ids from
+#' @param node node to get members from
 #'
 #' @import dplyr
 
-get_ids <- function(us, node) {
+get_members <- function(us, node) {
 
   if (node == "") {
     return(1:nrow(us$data))
   }
 
   if (node == "<Noise>") {
-    stop("Can't get ids from a <Noise> node.")
+    stop("Can't get members from a <Noise> node.")
   }
 
   us$clusters %>%
-    filter(.data$to == node) %>%
-    pull(.data$ids) %>%
+    filter(.data$id == node) %>%
+    pull(.data$members) %>%
     unlist
 }
 
-#' Get ids from a 'Noise' child of a node
+#' Get members from a 'Noise' child of a node
 #'
 #' @param us an umapscan object
-#' @param node node to get child 'Noise' ids from
+#' @param node node to get child 'Noise' members from
 #'
 #' @import dplyr
 
-get_noise_ids <- function(us, node) {
+get_noise_members <- function(us, node) {
 
   if (node == "<Noise>") {
-    stop("Can't get ids from a <Noise> node.")
+    stop("Can't get members from a <Noise> node.")
   }
 
   us$clusters %>%
-    filter(.data$from == node, .data$to == "<Noise>") %>%
-    pull(.data$ids) %>%
+    filter(.data$parent == node, .data$id == "<Noise>") %>%
+    pull(.data$members) %>%
     unlist
 }
 
@@ -262,10 +263,10 @@ get_cluster_data <- function(us, cluster) {
     stop("Can't get data for a <Noise> cluster.")
   }
 
-  ids <- get_ids(us, cluster)
+  members <- get_members(us, cluster)
   d <- dplyr::bind_cols(us$data_sup, us$data)
   d %>%
-    dplyr::slice(ids) %>%
+    dplyr::slice(members) %>%
     dplyr::mutate(umapscan_cluster = cluster)
 
 }
@@ -302,9 +303,9 @@ rename_cluster <- function(us, old, new) {
   }
 
   ## Test for same new name with another parent
-  if (new != "<Noise>" && new %in% us$clusters$to) {
-    parent_old <- us$clusters$from[us$clusters$to == old]
-    parent_new <- us$clusters$from[us$clusters$to == new]
+  if (new != "<Noise>" && new %in% us$clusters$id) {
+    parent_old <- us$clusters$parent[us$clusters$id == old]
+    parent_new <- us$clusters$parent[us$clusters$id == new]
     if (parent_old != parent_new) {
       stop("Can't rename a cluster with the same name as another cluster with another parent.")
     }
@@ -312,13 +313,13 @@ rename_cluster <- function(us, old, new) {
 
   us$clusters <- us$clusters %>%
     mutate(
-      from = if_else(.data$from == old, new, .data$from),
-      to = if_else(.data$to == old, new, .data$to),
+      parent = if_else(.data$parent == old, new, .data$parent),
+      id = if_else(.data$id == old, new, .data$id),
     ) %>%
-    group_by(.data$from, .data$to, .data$level) %>%
+    group_by(.data$parent, .data$id, .data$level) %>%
     summarise(
       n = sum(n),
-      ids = list(unlist(c(.data$ids)))
+      members = list(unlist(c(.data$members)))
     ) %>%
     ungroup()
 
@@ -359,23 +360,23 @@ remove_cluster <- function(us, cluster, rm_root = FALSE) {
     stop("Can't remove a <Noise> cluster.")
   }
 
-  from_lines <- us$clusters %>%
-    filter(.data$from == cluster) %>%
-    select(this_from = .data$from, this_to = .data$to)
+  parent_lines <- us$clusters %>%
+    filter(.data$parent == cluster) %>%
+    select(this_parent = .data$parent, this_id = .data$id)
 
-  purrr::pwalk(from_lines, function(this_from, this_to) {
+  purrr::pwalk(parent_lines, function(this_parent, this_id) {
     ## Ensure we only remove one <Noise> node
-    if (this_to == "<Noise>") {
+    if (this_id == "<Noise>") {
       us$clusters <<- us$clusters %>%
-        filter(!(.data$from == this_from & .data$to == this_to))
+        filter(!(.data$parent == this_parent & .data$id == this_id))
     } else {
-      us <<- remove_cluster(us, this_to, rm_root = TRUE)
+      us <<- remove_cluster(us, this_id, rm_root = TRUE)
     }
   })
 
   if (rm_root) {
-    to_lines <- us$clusters$to == cluster
-    us$clusters <- us$clusters %>% filter(!to_lines)
+    id_lines <- us$clusters$id == cluster
+    us$clusters <- us$clusters %>% filter(!id_lines)
   }
 
   us
@@ -394,7 +395,7 @@ remove_noise_cluster <- function(us, parent) {
   }
 
   us$clusters <- us$clusters %>%
-    filter(!(.data$from == parent & .data$to == "<Noise>"))
+    filter(!(.data$parent == .env$parent & .data$id == "<Noise>"))
 
   return(us)
 }
@@ -413,10 +414,11 @@ remove_noise_cluster <- function(us, parent) {
 
 reinit_clusters <- function(us) {
   us$clusters <- tibble::tibble(
-    from = character(0),
-    to = character(0),
+    parent = character(0),
+    id = character(0),
     n = integer(0),
-    ids = list()
+    members = list(),
+    label = character(0)
   )
 
   us
