@@ -21,7 +21,7 @@ test_that("new_umapscan results are ok", {
   us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = FALSE)
   expect_equal(us$data, iris_num)
   expect_equal(us$data_sup, iris_sup)
-  expect_equal(dim(us$cluster), c(0, 5))
+  expect_equal(dim(us$cluster), c(0, 6))
   expect_equal(dim(us$umap), c(nrow(iris_num), 2))
   set.seed(1337)
   umap <- uwot::umap(iris_num, approx_pow = TRUE)

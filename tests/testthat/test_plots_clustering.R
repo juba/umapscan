@@ -31,7 +31,7 @@ library(quanteda)
 corpus <- data_corpus_inaugural
 dtm <- dfm(corpus, remove_punct = TRUE)
 dtm <- dfm_trim(dtm, min_termfreq = 50)
-us_text <- new_umapscan(convert(dtm, to="data.frame"), n_neighbors = 5, min_dist = 0.1, metric = "cosine", seed = 1111)
+us_text <- new_umapscan(dtm, n_neighbors = 5, min_dist = 0.1, metric = "cosine", seed = 1111)
 us_text <- compute_clusters(us_text, minPts = 3, eps = 0.7)
 cluster_describe_keyness <- describe_clusters(us_text, type = "keyness")
 cluster_describe_keyness_full <- describe_clusters(us_text, type = "keyness", n_terms = 10, text_size = 12, free_scale = FALSE)
