@@ -1,11 +1,4 @@
 
-devtools::load_all(".")
-
-iris_num <- iris %>% select_if(is.numeric)
-iris_sup <- iris %>% select(Species)
-us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1111)
-us
-us <- compute_clusters(us, minPts = 3, eps = 1, alpha = 1)
 describe_clusters(us)
 
 us2 <- compute_clusters(us, minPts = 3, eps = 0.6, alpha = 1, parent = "2")
@@ -31,10 +24,10 @@ corpus <- data_corpus_inaugural
 dtm <- dfm(corpus, remove_punct = TRUE)
 dtm <- dfm_trim(dtm, min_termfreq = 50)
 
-us <- new_umapscan(convert(dtm, to="data.frame"), n_neighbors = 5, min_dist = 0.1, metric = "cosine")
+us <- new_umapscan(dtm, n_neighbors = 5, min_dist = 0.1, metric = "cosine")
 us <- compute_clusters(us, minPts = 3, eps = 1)
 describe_clusters(us, type = "keyness")
-us2 <- compute_clusters(us, minPts = 3, eps = .5, parent = "2")
+us2 <- compute_clusters(us, minPts = 3, eps = .3, parent = "2")
 describe_clusters(us2, type = "keyness")
 describe_clusters(us2, type = "keyness", n_terms = 10, free_scale = FALSE, text_size = 15)
 describe_clusters(us2, type = "keyness", keyness_measure = "lr")
