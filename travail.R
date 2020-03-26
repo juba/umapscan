@@ -1,12 +1,22 @@
 
+iris_num <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
+iris_sup <- iris[, "Species", drop = FALSE]
+us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = TRUE)
+us <- compute_clusters(us, minPts = 3, eps = 1, graph = FALSE)
 describe_clusters(us)
 
-us2 <- compute_clusters(us, minPts = 3, eps = 0.6, alpha = 1, parent = "2")
-us3 <- compute_clusters(us2, minPts = 3, eps = 0.3, alpha = 1, parent = "2_2")
+us2 <- compute_clusters(us, minPts = 3, eps = 0.3, alpha = 1, parent = "2")
+us3 <- compute_clusters(us2, minPts = 3, eps = 0.2, alpha = 1, parent = "2_1")
 us3
 
 us4 <- compute_clusters(us3, minPts = 3, eps = 0.3, alpha = 1, parent = "1")
 us4
+
+
+us4$clusters
+us4 <- label_cluster(us4, "3", "Foobar")
+get_clusters_membership(us4)
+get_clusters_membership(us4, labels = FALSE)
 
 ## categorical
 
