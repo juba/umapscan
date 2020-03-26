@@ -12,7 +12,8 @@ describe_clusters(
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
   n_terms = 20,
   text_size = 10,
-  free_scale = TRUE
+  free_scale = TRUE,
+  show_negative = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ describe_clusters(
 \item{text_size}{if type = "keyness", plot text size}
 
 \item{free_scale}{if type = "keyness", don't use the same scale on each barplot}
+
+\item{show_negative}{if TRUE and type = "keyness", show negative keyness features}
 }
 \description{
 Describe clusters of an umapscan object
