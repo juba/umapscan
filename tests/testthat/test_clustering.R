@@ -38,6 +38,21 @@ test_that("get cluster memberships", {
   )
 })
 
+test_that("label_cluster", {
+  us_lab <- label_cluster(us, "3_1", "Cluster 3_1")
+  us_lab <- label_cluster(us_lab, "2", "Cluster 2")
+  expect_warning(
+    tmp <- label_cluster(us_lab, "3", "Cluster 2")
+  )
+  expect_equal(
+    unique(get_clusters_membership(us_lab)),
+    c("1_1", "Cluster 2", "<Noise>", "1_2", "1_3", "Cluster 3_1", "3_2", "3_3")
+  )
+  expect_equal(
+    unique(get_clusters_membership(us_lab, labels = FALSE)),
+    c("1_1", "2", "<Noise>", "1_2", "1_3", "3_1", "3_2", "3_3")
+  )
+})
 
 test_that("get_leaves", {
   res <- structure(list(parent = c("1", "1", "1", "1", "", "3", "3", "3",
