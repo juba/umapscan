@@ -229,18 +229,19 @@ plot.umapscan <- function(
 #' @param us umapscan object to be plotted
 #' @param point_labels a character vector of point labels displayed
 #'   in a popup on hover. Can contain HTML.
+#' @param labels if TRUE, us labels instead of identifiers to identify clusters
 #'
 #' @export
 #' @importFrom purrr map
 #' @importFrom shiny HTML
 #' @import leaflet
 
-map_plot <- function(us, point_labels = NULL) {
+map_plot <- function(us, point_labels = NULL, labels = TRUE) {
 
   ## Generate data for each clustering level
   levels <- purrr::map(1:max(us$clusters$level), function(level) {
 
-    clusters <- get_clusters_membership(us, max_level = level)
+    clusters <- get_clusters_membership(us, max_level = level, labels = labels)
     clusters[clusters == "<Noise>"] <- NA
     suppressWarnings({
       pal <- leaflet::colorFactor(
@@ -252,7 +253,7 @@ map_plot <- function(us, point_labels = NULL) {
       mutate(clust = clusters) %>%
       tidyr::drop_na(.data$clust) %>%
       group_by(.data$clust) %>%
-      summarise(x = mean(.data$.umap_x), y = mean(.data$.umap_y))
+      summarise(.umap_x = mean(.data$.umap_x), .umap_y = mean(.data$.umap_y))
 
     list(clusters = clusters, palette = pal, clusters_labels = clusters_labels)
   })
