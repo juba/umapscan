@@ -14,7 +14,7 @@ keyness_stats(
 )
 }
 \arguments{
-\item{groups}{groups membership computed by \code{clust_members}}
+\item{groups}{groups membership computed by \code{clust_membership}}
 
 \item{data}{object used to compute the clustering}
 

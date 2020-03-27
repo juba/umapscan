@@ -1,6 +1,6 @@
 #' Generate cluster keyness statistics from a clustering result
 #'
-#' @param groups groups membership computed by `clust_members`
+#' @param groups groups membership computed by `clust_membership`
 #' @param data object used to compute the clustering
 #' @param keyness_measure statistics to compute
 #' @param n_terms number of terms to display in keyness plots

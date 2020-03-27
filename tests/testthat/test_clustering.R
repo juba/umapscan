@@ -8,32 +8,32 @@ us <- clust_compute(us, minPts = 3, parent = "3", eps = 0.4, graph = FALSE)
 us <- clust_compute(us, minPts = 3, parent = "1", eps = 0.25, graph = FALSE)
 
 test_that("get cluster memberships", {
-  # saveRDS(clust_members(us), "tests/values/get_cluster_membership1.rds")
+  # saveRDS(clust_membership(us), "tests/values/get_cluster_membership1.rds")
   expect_equal(
-    clust_members(us),
+    clust_membership(us),
     readRDS("../values/get_cluster_membership1.rds")
   )
-  # saveRDS(clust_members(us, parent = "3"), "tests/values/get_cluster_membership2.rds")
+  # saveRDS(clust_membership(us, parent = "3"), "tests/values/get_cluster_membership2.rds")
   expect_equal(
-    clust_members(us, parent = "3"),
+    clust_membership(us, parent = "3"),
     readRDS("../values/get_cluster_membership2.rds")
   )
-  # saveRDS(clust_members(us, max_level = 1), "tests/values/get_cluster_membership3.rds")
+  # saveRDS(clust_membership(us, max_level = 1), "tests/values/get_cluster_membership3.rds")
   expect_equal(
-    clust_members(us, max_level = 1),
+    clust_membership(us, max_level = 1),
     readRDS("../values/get_cluster_membership3.rds")
   )
-  # saveRDS(clust_members(us, noise_inherit_parent = TRUE, parent = "2"), "tests/values/get_cluster_membership4.rds")
+  # saveRDS(clust_membership(us, noise_inherit_parent = TRUE, parent = "2"), "tests/values/get_cluster_membership4.rds")
   expect_equal(
-    clust_members(us, noise_inherit_parent = TRUE, parent = "2"),
+    clust_membership(us, noise_inherit_parent = TRUE, parent = "2"),
     readRDS("../values/get_cluster_membership4.rds")
   )
   expect_error(
-    clust_members(us, parent = "<Noise>"),
+    clust_membership(us, parent = "<Noise>"),
     "Can't get membership starting from a <Noise> node"
   )
   expect_equal(
-    clust_members(us, noise_inherit_parent = TRUE, parent = "8"),
+    clust_membership(us, noise_inherit_parent = TRUE, parent = "8"),
     rep(NA_character_, 150)
   )
 })
@@ -48,11 +48,11 @@ test_that("clust_label", {
     tmp <- clust_label(us_lab, "3", "Cluster 2")
   )
   expect_equal(
-    unique(clust_members(us_lab)),
+    unique(clust_membership(us_lab)),
     c("1_1", "Cluster 2", "<Noise>", "1_2", "1_3", "Cluster 3_1", "3_2", "3_3")
   )
   expect_equal(
-    unique(clust_members(us_lab, labels = FALSE)),
+    unique(clust_membership(us_lab, labels = FALSE)),
     c("1_1", "2", "<Noise>", "1_2", "1_3", "3_1", "3_2", "3_3")
   )
 })
@@ -184,7 +184,7 @@ test_that("clust_remove_noise", {
   expect_equal(get_leaves(out$clusters, "1"), res)
 
   out <- clust_remove_noise(us, "3")
-  expect_equal(sum(is.na(clust_members(out))), 1)
+  expect_equal(sum(is.na(clust_membership(out))), 1)
 
 })
 

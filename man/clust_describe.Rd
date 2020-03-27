@@ -57,6 +57,6 @@ clust_describe(us, type = "ridge")
 clust_describe(us, parent = "3")
 }
 \seealso{
-\code{\link[=clust_compute]{clust_compute()}}, \code{\link[=clust_get_data]{clust_get_data()}}, \code{\link[=clust_members]{clust_members()}},
+\code{\link[=clust_compute]{clust_compute()}}, \code{\link[=clust_get_data]{clust_get_data()}}, \code{\link[=clust_membership]{clust_membership()}},
 \code{\link[=clust_rename]{clust_rename()}}
 }
