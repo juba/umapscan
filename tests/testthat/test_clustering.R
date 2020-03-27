@@ -41,6 +41,9 @@ test_that("get cluster memberships", {
 test_that("label_cluster", {
   us_lab <- label_cluster(us, "3_1", "Cluster 3_1")
   us_lab <- label_cluster(us_lab, "2", "Cluster 2")
+  expect_error(
+    label_cluster(us_lab, "nawak", "foo")
+  )
   expect_warning(
     tmp <- label_cluster(us_lab, "3", "Cluster 2")
   )
@@ -112,6 +115,9 @@ test_that("get_cluster data", {
 
 
 test_that("rename_cluster", {
+  expect_error(
+    rename_cluster(us, "nawak", "foo")
+  )
   # saveRDS(rename_cluster(us, "3_1", "foo")$clusters %>% tidyr::unnest(members), "tests/values/rename1.rds")
   expect_equal(
     rename_cluster(us, "3_1", "foo")$clusters %>% tidyr::unnest(members),

@@ -309,6 +309,10 @@ get_cluster_data <- function(us, id) {
 
 rename_cluster <- function(us, old, new) {
 
+  if (!(old %in% us$clusters$id)) {
+    stop(paste0("id not found : ", old))
+  }
+
   if (old == "<Noise>") {
     stop("Can't rename a <Noise> cluster.")
   }
@@ -366,6 +370,10 @@ rename_cluster <- function(us, old, new) {
 label_cluster <- function(us, id, label) {
 
   id <- as.character(id)
+
+  if (!(id %in% us$clusters$id)) {
+    stop(paste0("id not found : ", id))
+  }
 
   if (label %in% us$clusters$label) {
     warning("A cluster already exists with the same label.")
