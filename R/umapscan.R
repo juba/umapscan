@@ -140,7 +140,7 @@ print.umapscan <- function(x, ...) {
   cat("\nClusters :")
   if (nrow(x$clusters) > 0) {
     cat("\n\n")
-    print(data.tree::as.Node(x$clusters, mode = "network"))
+    print(data.tree::as.Node(x$clusters, mode = "network"), "label", "n")
   } else {
     cat(" <none>\n\n")
   }
