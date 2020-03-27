@@ -28,7 +28,7 @@
 
 clust_plot <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE, labels = TRUE) {
 
-  clust <- clust_members(us, parent,
+  clust <- clust_membership(us, parent,
     noise_inherit_parent = noise_inherit_parent, labels = labels)
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
   d_clust <- us$umap[!is.na(clust),]
@@ -77,7 +77,7 @@ clust_plot <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1,
 #' matrix.
 #'
 #' @seealso
-#' [clust_compute()], [clust_get_data()], [clust_members()],
+#' [clust_compute()], [clust_get_data()], [clust_membership()],
 #' [clust_rename()]
 #'
 #'
@@ -110,7 +110,7 @@ clust_describe <- function(
   type <- match.arg(type)
   keyness_measure <- match.arg(keyness_measure)
 
-  clusters <- clust_members(us, parent, noise_inherit_parent = FALSE, labels = labels)
+  clusters <- clust_membership(us, parent, noise_inherit_parent = FALSE, labels = labels)
   clusters[clusters == "<Noise>"] <- NA
   select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)

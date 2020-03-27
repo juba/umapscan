@@ -15,8 +15,8 @@ us4
 
 us4$clusters
 us4 <- clust_label(us4, "3", "Foobar")
-clust_members(us4)
-clust_members(us4, labels = FALSE)
+clust_membership(us4)
+clust_membership(us4, labels = FALSE)
 
 ## categorical
 

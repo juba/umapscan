@@ -121,16 +121,16 @@ clust_compute <- function(
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
 #' us <- clust_compute(us, minPts = 3, eps = 0.5)
-#' clust_members(us)
+#' clust_membership(us)
 #' us <- clust_compute(us, minPts = 3, eps = 0.45, parent = "3")
-#' clust_members(us)
-#' clust_members(us, parent = "3")
+#' clust_membership(us)
+#' clust_membership(us, parent = "3")
 #'
 #' @importFrom rlang .data
 #' @importFrom rlang .env
 
 
-clust_members <- function(us, parent = "", max_level,
+clust_membership <- function(us, parent = "", max_level,
   noise_inherit_parent = FALSE, labels = TRUE) {
 
   if (parent == "<Noise>") {
