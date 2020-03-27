@@ -3,56 +3,56 @@ context("umapscan clustering functions")
 iris_num <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
 iris_sup <- iris[, "Species", drop = FALSE]
 us <- new_umapscan(iris_num, data_sup = iris_sup, seed = 1337, scale = TRUE)
-us <- compute_clusters(us, minPts = 3, eps = 1, graph = FALSE)
-us <- compute_clusters(us, minPts = 3, parent = "3", eps = 0.4, graph = FALSE)
-us <- compute_clusters(us, minPts = 3, parent = "1", eps = 0.25, graph = FALSE)
+us <- clust_compute(us, minPts = 3, eps = 1, graph = FALSE)
+us <- clust_compute(us, minPts = 3, parent = "3", eps = 0.4, graph = FALSE)
+us <- clust_compute(us, minPts = 3, parent = "1", eps = 0.25, graph = FALSE)
 
 test_that("get cluster memberships", {
-  # saveRDS(get_clusters_membership(us), "tests/values/get_cluster_membership1.rds")
+  # saveRDS(clust_members(us), "tests/values/get_cluster_membership1.rds")
   expect_equal(
-    get_clusters_membership(us),
+    clust_members(us),
     readRDS("../values/get_cluster_membership1.rds")
   )
-  # saveRDS(get_clusters_membership(us, parent = "3"), "tests/values/get_cluster_membership2.rds")
+  # saveRDS(clust_members(us, parent = "3"), "tests/values/get_cluster_membership2.rds")
   expect_equal(
-    get_clusters_membership(us, parent = "3"),
+    clust_members(us, parent = "3"),
     readRDS("../values/get_cluster_membership2.rds")
   )
-  # saveRDS(get_clusters_membership(us, max_level = 1), "tests/values/get_cluster_membership3.rds")
+  # saveRDS(clust_members(us, max_level = 1), "tests/values/get_cluster_membership3.rds")
   expect_equal(
-    get_clusters_membership(us, max_level = 1),
+    clust_members(us, max_level = 1),
     readRDS("../values/get_cluster_membership3.rds")
   )
-  # saveRDS(get_clusters_membership(us, noise_inherit_parent = TRUE, parent = "2"), "tests/values/get_cluster_membership4.rds")
+  # saveRDS(clust_members(us, noise_inherit_parent = TRUE, parent = "2"), "tests/values/get_cluster_membership4.rds")
   expect_equal(
-    get_clusters_membership(us, noise_inherit_parent = TRUE, parent = "2"),
+    clust_members(us, noise_inherit_parent = TRUE, parent = "2"),
     readRDS("../values/get_cluster_membership4.rds")
   )
   expect_error(
-    get_clusters_membership(us, parent = "<Noise>"),
+    clust_members(us, parent = "<Noise>"),
     "Can't get membership starting from a <Noise> node"
   )
   expect_equal(
-    get_clusters_membership(us, noise_inherit_parent = TRUE, parent = "8"),
+    clust_members(us, noise_inherit_parent = TRUE, parent = "8"),
     rep(NA_character_, 150)
   )
 })
 
-test_that("label_cluster", {
-  us_lab <- label_cluster(us, "3_1", "Cluster 3_1")
-  us_lab <- label_cluster(us_lab, "2", "Cluster 2")
+test_that("clust_label", {
+  us_lab <- clust_label(us, "3_1", "Cluster 3_1")
+  us_lab <- clust_label(us_lab, "2", "Cluster 2")
   expect_error(
-    label_cluster(us_lab, "nawak", "foo")
+    clust_label(us_lab, "nawak", "foo")
   )
   expect_warning(
-    tmp <- label_cluster(us_lab, "3", "Cluster 2")
+    tmp <- clust_label(us_lab, "3", "Cluster 2")
   )
   expect_equal(
-    unique(get_clusters_membership(us_lab)),
+    unique(clust_members(us_lab)),
     c("1_1", "Cluster 2", "<Noise>", "1_2", "1_3", "Cluster 3_1", "3_2", "3_3")
   )
   expect_equal(
-    unique(get_clusters_membership(us_lab, labels = FALSE)),
+    unique(clust_members(us_lab, labels = FALSE)),
     c("1_1", "2", "<Noise>", "1_2", "1_3", "3_1", "3_2", "3_3")
   )
 })
@@ -101,97 +101,97 @@ test_that("get_noise_members", {
 
 
 test_that("get_cluster data", {
-  expect_error(get_cluster_data(us))
+  expect_error(clust_get_data(us))
   expect_equal(
-    dim(get_cluster_data(us, "2")),
+    dim(clust_get_data(us, "2")),
     c(17, 6)
   )
   expect_equal(
-    get_cluster_data(us, "3_2")$umapscan_cluster,
+    clust_get_data(us, "3_2")$umapscan_cluster,
     rep("3_2", 4)
   )
-  expect_error(get_cluster_data(us, "<Noise>"), "Can't get data for a <Noise> cluster.")
+  expect_error(clust_get_data(us, "<Noise>"), "Can't get data for a <Noise> cluster.")
 })
 
 
-test_that("rename_cluster", {
+test_that("clust_rename", {
   expect_error(
-    rename_cluster(us, "nawak", "foo")
+    clust_rename(us, "nawak", "foo")
   )
-  # saveRDS(rename_cluster(us, "3_1", "foo")$clusters %>% tidyr::unnest(members), "tests/values/rename1.rds")
+  # saveRDS(clust_rename(us, "3_1", "foo")$clusters %>% tidyr::unnest(members), "tests/values/rename1.rds")
   expect_equal(
-    rename_cluster(us, "3_1", "foo")$clusters %>% tidyr::unnest(members),
+    clust_rename(us, "3_1", "foo")$clusters %>% tidyr::unnest(members),
     readRDS("../values/rename1.rds")
   )
-  expect_error(rename_cluster(us, "<Noise>", "foo"))
-  out <- us %>% rename_cluster("3_2", "3_1")
+  expect_error(clust_rename(us, "<Noise>", "foo"))
+  out <- us %>% clust_rename("3_2", "3_1")
   expect_equal(
     get_members(out, "3_1"),
     c(get_members(us, "3_1"), get_members(us, "3_2"))
   )
-  out <- us %>% rename_cluster("3_3", "<Noise>")
+  out <- us %>% clust_rename("3_3", "<Noise>")
   expect_setequal(
     umapscan:::get_noise_members(out, "3"),
     c(umapscan:::get_noise_members(us, "3"), umapscan:::get_members(us, "3_3"))
   )
   expect_error(
-    rename_cluster(us, "3_2", "1_1"),
+    clust_rename(us, "3_2", "1_1"),
     "Can't rename a cluster with the same name as another cluster with another parent."
   )
 })
 
-test_that("remove_cluster", {
-  expect_error(remove_cluster(us))
-  expect_error(remove_cluster(us, "<Noise>"), "Can't remove a <Noise> cluster.")
+test_that("clust_remove", {
+  expect_error(clust_remove(us))
+  expect_error(clust_remove(us, "<Noise>"), "Can't remove a <Noise> cluster.")
 
   ## No test with rm_root = TRUE because the function should not
   ## be called directly with this argument.
 
-  out <- umapscan:::remove_cluster(us, "3_2", rm_root = FALSE)
+  out <- umapscan:::clust_remove(us, "3_2", rm_root = FALSE)
   expect_equal(
     out$clusters %>% tidyr::unnest(members),
     us$clusters %>% tidyr::unnest(members)
   )
-  out <- umapscan:::remove_cluster(us, "2", rm_root = FALSE)
+  out <- umapscan:::clust_remove(us, "2", rm_root = FALSE)
   expect_equal(
     out$clusters %>% tidyr::unnest(members),
     us$clusters %>% tidyr::unnest(members)
   )
-  out <- umapscan:::remove_cluster(us, "3", rm_root = FALSE)
+  out <- umapscan:::clust_remove(us, "3", rm_root = FALSE)
   expect_equal(
     dim(out$clusters %>% dplyr::filter(parent == "3")),
     c(0, 6)
   )
 })
 
-test_that("remove_noise_cluster", {
-  expect_error(remove_noise_cluster(us))
+test_that("clust_remove_noise", {
+  expect_error(clust_remove_noise(us))
   expect_error(
-    remove_noise_cluster(us, "<Noise>"),
+    clust_remove_noise(us, "<Noise>"),
     "Can't remove a <Noise> cluster from a <Noise> parent."
   )
 
-  out <- umapscan:::remove_noise_cluster(us, "2")
+  out <- umapscan:::clust_remove_noise(us, "2")
   expect_equal(
     out$clusters %>% tidyr::unnest(members),
     us$clusters %>% tidyr::unnest(members)
   )
 
-  out <- remove_noise_cluster(us, "1")
+  out <- clust_remove_noise(us, "1")
   res <- structure(list(parent = c("1", "1", "1"), id = c("1_1", "1_2",
     "1_3")), row.names = c(NA, -3L), class = c("tbl_df", "tbl", "data.frame"
     ))
   expect_equal(get_leaves(out$clusters, "1"), res)
 
-  out <- remove_noise_cluster(us, "3")
-  expect_equal(sum(is.na(get_clusters_membership(out))), 1)
+  out <- clust_remove_noise(us, "3")
+  expect_equal(sum(is.na(clust_members(out))), 1)
 
 })
 
 
-test_that("collapse_clusters", {
+test_that("clust_collapse", {
 
-  out <- collapse_clusters(us, c("1", "3"))
+  out <- clust_collapse(us, c("1", "3"))
   res <- structure(list(parent = c("", "", ""), id = c("1", "2", "3")), row.names = c(NA,
     -3L), class = c("tbl_df", "tbl", "data.frame"))
   expect_equal(get_leaves(out$clusters), res)

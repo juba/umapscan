@@ -43,3 +43,75 @@ qualitative_palette <- function(var, label, type = c("color", "fill")) {
 
 
 }
+
+#' Get leaves from a node
+#'
+#' @param tree tree object, such as a `clusters` element of a `umapscan` object
+#' @param node node to find leaves from
+#' @param parent optional parent of `node` (should not be used directly, only for recursive call).
+#'
+#' `parent` is used during computation to differentiate different 'Noise' nodes.
+#'
+#' @importFrom dplyr bind_rows
+#' @importFrom tibble tibble
+
+get_leaves <- function(tree, node = "", parent = NA) {
+
+  if (node == "<Noise>" && is.na(parent)) {
+    stop("Can't get leaves from a <Noise> node.")
+  }
+
+  children <- tree$id[tree$parent == node]
+
+  if (length(children) == 0) {
+    return(tibble::tibble(parent = parent, id = node))
+  }
+  leaves <- tibble::tibble(parent = character(0), id = character(0))
+  for(child in children) {
+    leaves <- dplyr::bind_rows(leaves, get_leaves(tree, child, parent = node))
+  }
+  return(leaves)
+}
+
+
+#' Get members from a node name
+#'
+#' @param us an umapscan object
+#' @param id cluster id to get members from
+#'
+#' @import dplyr
+
+get_members <- function(us, id) {
+
+  if (id == "") {
+    return(1:nrow(us$data))
+  }
+
+  if (id == "<Noise>") {
+    stop("Can't get members from a <Noise> node.")
+  }
+
+  us$clusters %>%
+    filter(.data$id == .env$id) %>%
+    pull(.data$members) %>%
+    unlist
+}
+
+#' Get members from a 'Noise' child of a node
+#'
+#' @param us an umapscan object
+#' @param node node to get child 'Noise' members from
+#'
+#' @import dplyr
+
+get_noise_members <- function(us, node) {
+
+  if (node == "<Noise>") {
+    stop("Can't get members from a <Noise> node.")
+  }
+
+  us$clusters %>%
+    filter(.data$parent == node, .data$id == "<Noise>") %>%
+    pull(.data$members) %>%
+    unlist
+}

@@ -10,10 +10,10 @@
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
 #' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.7)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
-#' us <- compute_clusters(us, minPts = 3, eps = 0.3, parent = "1")
-#' explor_umapscan(us)
+#' us <- clust_compute(us, minPts = 3, eps = 0.7)
+#' us <- clust_compute(us, minPts = 3, eps = 0.45, parent = "3")
+#' us <- clust_compute(us, minPts = 3, eps = 0.3, parent = "1")
+#' umapscan_explor(us)
 #' }
 #'
 #' @import shiny
@@ -21,7 +21,7 @@
 #' @importFrom graphics plot
 #' @importFrom collapsibleTree renderCollapsibleTree collapsibleTreeOutput
 
-explor_umapscan <- function(us) {
+umapscan_explor <- function(us) {
 
   vars_data <- names(us$data)
   vars_data_sup <- names(us$data_sup)
@@ -61,7 +61,7 @@ explor_umapscan <- function(us) {
           ),
         ),
         mainPanel(
-          plotOutput("umap_plot")
+          plotOutput("uumapscan_map")
         )
       ),
 
@@ -122,10 +122,10 @@ explor_umapscan <- function(us) {
 
       tree <- reactive({
         if(length(collapsed()) == 0) return(us)
-        collapse_clusters(us, collapsed())
+        clust_collapse(us, collapsed())
       })
 
-      output$umap_plot <- renderPlot({
+      output$uumapscan_map <- renderPlot({
         var <- rlang::sym(input$var)
         graphics::plot(us, color = !!var,
           alpha = input$alpha_data,
@@ -138,7 +138,7 @@ explor_umapscan <- function(us) {
       })
 
       output$umap_clusters <- renderPlot({
-        plot_clusters(tree(),
+        clust_plot(tree(),
           alpha = input$alpha_clusters,
           ellipses = input$ellipses_clusters,
           fixed = input$fixed_clusters,

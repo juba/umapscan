@@ -10,25 +10,25 @@
 #' @param labels if TRUE, use cluster label instead of id if available
 #'
 #' @seealso
-#' [compute_clusters()], [describe_clusters()]
+#' [clust_compute()], [clust_describe()]
 #' @export
 #'
 #' @examples
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5, graph = FALSE)
-#' plot_clusters(us, alpha = 1)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.45, graph = FALSE, parent = "3")
-#' plot_clusters(us, alpha = 0.5, ellipses = FALSE, parent = "3")
-#' plot_clusters(us)
+#' us <- clust_compute(us, minPts = 3, eps = 0.5, graph = FALSE)
+#' clust_plot(us, alpha = 1)
+#' us <- clust_compute(us, minPts = 3, eps = 0.45, graph = FALSE, parent = "3")
+#' clust_plot(us, alpha = 0.5, ellipses = FALSE, parent = "3")
+#' clust_plot(us)
 #'
 #' @import ggplot2
 #' @importFrom tidyr drop_na
 
-plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE, labels = TRUE) {
+clust_plot <- function(us, parent = "", noise_inherit_parent = FALSE, alpha = 1, ellipses = TRUE, fixed = FALSE, labels = TRUE) {
 
-  clust <- get_clusters_membership(us, parent,
+  clust <- clust_members(us, parent,
     noise_inherit_parent = noise_inherit_parent, labels = labels)
   if (all(is.na(clust))) stop("No defined clusters in umapscan object.")
   d_clust <- us$umap[!is.na(clust),]
@@ -77,8 +77,8 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #' matrix.
 #'
 #' @seealso
-#' [compute_clusters()], [get_cluster_data()], [get_clusters_membership()],
-#' [rename_cluster()]
+#' [clust_compute()], [clust_get_data()], [clust_members()],
+#' [clust_rename()]
 #'
 #'
 #'
@@ -91,13 +91,13 @@ plot_clusters <- function(us, parent = "", noise_inherit_parent = FALSE, alpha =
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' describe_clusters(us)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
-#' describe_clusters(us, type = "ridge")
-#' describe_clusters(us, parent = "3")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' clust_describe(us)
+#' us <- clust_compute(us, minPts = 3, eps = 0.45, parent = "3")
+#' clust_describe(us, type = "ridge")
+#' clust_describe(us, parent = "3")
 
-describe_clusters <- function(
+clust_describe <- function(
   us, parent = "", labels = TRUE,
   type = c("boxplot", "ridges", "barplot", "keyness"),
   position = "fill",
@@ -110,7 +110,7 @@ describe_clusters <- function(
   type <- match.arg(type)
   keyness_measure <- match.arg(keyness_measure)
 
-  clusters <- get_clusters_membership(us, parent, noise_inherit_parent = FALSE, labels = labels)
+  clusters <- clust_members(us, parent, noise_inherit_parent = FALSE, labels = labels)
   clusters[clusters == "<Noise>"] <- NA
   select <- !is.na(clusters)
   d <- us$data %>% dplyr::filter(select)
@@ -166,7 +166,7 @@ describe_clusters <- function(
 
   if (type == "keyness") {
 
-    g <- describe_clusters_keyness(
+    g <- clust_describe_keyness(
       d, clusters,
       keyness_measure = keyness_measure,
       n_terms = n_terms,
@@ -188,7 +188,7 @@ describe_clusters <- function(
 
 ## Keyness-based clusters description
 
-describe_clusters_keyness <- function(
+clust_describe_keyness <- function(
   d, clusters,
   keyness_measure = c("chi2", "lr", "exact", "pmi"),
   n_terms = 20,

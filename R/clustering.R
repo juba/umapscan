@@ -1,8 +1,8 @@
 #' Compute DBSCAN clusters from a umapscan object
 #'
-#' This function runs DBSCAN with the specified arguments to compute new clusters
-#' on a umapscan object. Only points which don't have an already validated cluster
-#' are taken into account.
+#' This function runs DBSCAN with the specified arguments to compute new 
+#' clusters on a umapscan object. Only points which don't have an already 
+#' validated cluster are taken into account.
 #'
 #' @param us umapscan object
 #' @param parent name of the parent cluster
@@ -14,11 +14,11 @@
 #' @param ellipses if TRUE, plot confidence ellipses around clusters
 #'
 #' @return
-#' Returns an updated `umapscan` object, and optionally displays a clusters plot.
+#' Returns an updated `umapscan` object, and optionally displays a
+#' clusters plot.
 #'
 #' @seealso
-#' [new_umapscan()], [describe_clusters()], [get_cluster_data()], [rename_cluster()],
-#' [plot_clusters()], [get_clusters_membership()]
+#' [new_umapscan()], [clust_describe()], [clust_plot()]
 #'
 #' @export
 #'
@@ -26,27 +26,31 @@
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' compute_clusters(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' clust_compute(us, minPts = 3, eps = 0.45, alpha = 1, parent = "3")
 #'
 #' @importFrom dbscan dbscan hdbscan
 
-compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, graph = TRUE, alpha = 1, ellipses = TRUE) {
+clust_compute <- function(
+  us, parent = "", noise_only = FALSE,
+  eps, minPts,
+  graph = TRUE, alpha = 1, ellipses = TRUE) {
 
-  if (!inherits(us, "umapscan")) stop("`us` must be an object of class umapscan.")
+  if (!inherits(us, "umapscan")) 
+    stop("`us` must be an object of class umapscan.")
 
   if (noise_only) {
     members <- get_noise_members(us, parent)
-    us <- remove_noise_cluster(us, parent)
+    us <- clust_remove_noise(us, parent)
   } else {
     members <- get_members(us, parent)
-    us <- remove_cluster(us, parent)
+    us <- clust_remove(us, parent)
   }
 
 
 
   d_clust <- us$umap %>% slice(members)
-  set.seed(us$seed, kind = "default", normal.kind = "default", sample.kind = "default")
+  set.seed(us$seed)
   if (missing(eps)) {
     message("Missing eps, hdbscan performed instead of dbscan")
     db <- dbscan::hdbscan(d_clust, minPts = minPts)
@@ -84,7 +88,7 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
   us$clusters$id[select] <- make.unique(us$clusters$id[select])
 
   if (graph) {
-    g <- plot_clusters(us, parent, alpha = alpha, fixed = TRUE)
+    g <- clust_plot(us, parent, alpha = alpha, fixed = TRUE)
     print(g)
   }
 
@@ -105,10 +109,10 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #' @param max_level get membership at most this level deep
 #' @param noise_inherit_parent if TRUE, 'Noise' points are given their parent cluster
 #'   membership
-#' @param if TRUE, use label when possible instead of identifier as cluster names
+#' @param labels if TRUE, use label when possible instead of identifier as cluster names
 #'
 #' @seealso
-#' [compute_clusters()], [get_cluster_data()], [rename_cluster()]
+#' [clust_compute()], [clust_get_data()], [clust_rename()]
 #'
 #' @export
 #'
@@ -116,14 +120,17 @@ compute_clusters <- function(us, parent = "", noise_only = FALSE, eps, minPts, g
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' get_clusters_membership(us)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.45, parent = "3")
-#' get_clusters_membership(us)
-#' get_clusters_membership(us, parent = "3")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' clust_members(us)
+#' us <- clust_compute(us, minPts = 3, eps = 0.45, parent = "3")
+#' clust_members(us)
+#' clust_members(us, parent = "3")
+#'
+#' @importFrom rlang .data
+#' @importFrom rlang .env
 
 
-get_clusters_membership <- function(us, parent = "", max_level,
+clust_members <- function(us, parent = "", max_level,
   noise_inherit_parent = FALSE, labels = TRUE) {
 
   if (parent == "<Noise>") {
@@ -171,86 +178,13 @@ get_clusters_membership <- function(us, parent = "", max_level,
 
 
 
-#' Get leaves from a node
-#'
-#' @param tree tree object, such as a `clusters` element of a `umapscan` object
-#' @param node node to find leaves from
-#' @param parent optional parent of `node` (should not be used directly, only for recursive call).
-#'
-#' `parent` is used during computation to differentiate different 'Noise' nodes.
-#'
-#' @importFrom dplyr bind_rows
-#' @importFrom tibble tibble
-
-get_leaves <- function(tree, node = "", parent = NA) {
-
-  if (node == "<Noise>" && is.na(parent)) {
-    stop("Can't get leaves from a <Noise> node.")
-  }
-
-  children <- tree$id[tree$parent == node]
-
-  if (length(children) == 0) {
-    return(tibble::tibble(parent = parent, id = node))
-  }
-  leaves <- tibble::tibble(parent = character(0), id = character(0))
-  for(child in children) {
-    leaves <- dplyr::bind_rows(leaves, get_leaves(tree, child, parent = node))
-  }
-  return(leaves)
-}
-
-
-#' Get members from a node name
-#'
-#' @param us an umapscan object
-#' @param id cluster id to get members from
-#'
-#' @import dplyr
-
-get_members <- function(us, id) {
-
-  if (id == "") {
-    return(1:nrow(us$data))
-  }
-
-  if (id == "<Noise>") {
-    stop("Can't get members from a <Noise> node.")
-  }
-
-  us$clusters %>%
-    filter(.data$id == .env$id) %>%
-    pull(.data$members) %>%
-    unlist
-}
-
-#' Get members from a 'Noise' child of a node
-#'
-#' @param us an umapscan object
-#' @param node node to get child 'Noise' members from
-#'
-#' @import dplyr
-
-get_noise_members <- function(us, node) {
-
-  if (node == "<Noise>") {
-    stop("Can't get members from a <Noise> node.")
-  }
-
-  us$clusters %>%
-    filter(.data$parent == node, .data$id == "<Noise>") %>%
-    pull(.data$members) %>%
-    unlist
-}
-
-
 #' Get an umapscan cluster data
 #'
 #' @param us umapscan object
 #' @param id cluster id to retrieve
 #'
 #' @seealso
-#' [compute_clusters()], [describe_clusters()], [rename_cluster()]
+#' [clust_compute()], [clust_describe()], [clust_rename()]
 #'
 #' @return
 #' 1 data frame with the `data` and `data_sup` variables of the cluster observations
@@ -262,10 +196,10 @@ get_noise_members <- function(us, node) {
 #' iris_num <- iris %>% select_if(is.numeric)
 #' iris_sup <- iris %>% select(Species)
 #' us <- new_umapscan(iris_num, data_sup = iris_sup, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' get_cluster_data(us, "1")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' clust_get_data(us, "1")
 
-get_cluster_data <- function(us, id) {
+clust_get_data <- function(us, id) {
 
   id <- as.character(id)
 
@@ -290,7 +224,7 @@ get_cluster_data <- function(us, id) {
 #' @param new new cluster identifier
 #'
 #' @seealso
-#' [label_cluster()]
+#' [clust_label()]
 #'
 #' @return
 #' An updated umapscan object (invisibly). If two clusters have the same identifier after
@@ -303,11 +237,11 @@ get_cluster_data <- function(us, id) {
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' rename_cluster(us, "1", "Cluster 1")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' clust_rename(us, "1", "Cluster 1")
 #' us
 
-rename_cluster <- function(us, old, new) {
+clust_rename <- function(us, old, new) {
 
   if (!(old %in% us$clusters$id)) {
     stop(paste0("id not found : ", old))
@@ -349,7 +283,7 @@ rename_cluster <- function(us, old, new) {
 #' @param label cluster label
 #'
 #' @seealso
-#' [rename_cluster()]
+#' [clust_rename()]
 #'
 #' @return
 #' An updated umapscan object (invisibly).
@@ -361,13 +295,13 @@ rename_cluster <- function(us, old, new) {
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5, graph = FALSE)
-#' us <- rename_cluster(us, "1", "clust_1")
-#' us <- label_cluster(us, "clust_1", "Cluster 1")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5, graph = FALSE)
+#' us <- clust_rename(us, "1", "clust_1")
+#' us <- clust_label(us, "clust_1", "Cluster 1")
 #' us$clusters
 
 
-label_cluster <- function(us, id, label) {
+clust_label <- function(us, id, label) {
 
   id <- as.character(id)
 
@@ -403,16 +337,16 @@ label_cluster <- function(us, id, label) {
 #' library(dplyr)
 #' iris_num <- iris %>% select_if(is.numeric)
 #' us <- new_umapscan(iris_num, n_neighbors = 25, min_dist = 0.1, seed = 1337)
-#' us <- compute_clusters(us, minPts = 3, eps = 0.5)
-#' us <- compute_clusters(us, parent = "3" ,minPts = 3, eps = 0.45)
-#' remove_cluster(us, "3_1")
+#' us <- clust_compute(us, minPts = 3, eps = 0.5)
+#' us <- clust_compute(us, parent = "3" ,minPts = 3, eps = 0.45)
+#' clust_remove(us, "3_1")
 #' us
-#' remove_cluster(us, "3")
+#' clust_remove(us, "3")
 #' us
 #'
 #' @export
 
-remove_cluster <- function(us, id, rm_root = FALSE) {
+clust_remove <- function(us, id, rm_root = FALSE) {
 
   if (id == "<Noise>") {
     stop("Can't remove a <Noise> cluster.")
@@ -428,7 +362,7 @@ remove_cluster <- function(us, id, rm_root = FALSE) {
       us$clusters <<- us$clusters %>%
         filter(!(.data$parent == this_parent & .data$id == this_id))
     } else {
-      us <<- remove_cluster(us, this_id, rm_root = TRUE)
+      us <<- clust_remove(us, this_id, rm_root = TRUE)
     }
   })
 
@@ -446,7 +380,7 @@ remove_cluster <- function(us, id, rm_root = FALSE) {
 #' @param us umapscan object
 #' @param parent parent of the 'Noise' cluster to remove
 
-remove_noise_cluster <- function(us, parent) {
+clust_remove_noise <- function(us, parent) {
 
   if (parent == "<Noise>") {
     stop("Can't remove a <Noise> cluster from a <Noise> parent.")
@@ -470,7 +404,7 @@ remove_noise_cluster <- function(us, parent) {
 #' @export
 #' @importFrom tibble tibble
 
-reinit_clusters <- function(us) {
+clust_reinit <- function(us) {
   us$clusters <- tibble::tibble(
     parent = character(0),
     id = character(0),
@@ -493,15 +427,13 @@ reinit_clusters <- function(us) {
 #'
 #' @export
 
-collapse_clusters <- function(us, collapsed) {
+clust_collapse <- function(us, collapsed) {
 
   for (node in collapsed) {
-    us <- remove_cluster(us, node)
+    us <- clust_remove(us, node)
   }
 
   us
 }
-
-
 
 

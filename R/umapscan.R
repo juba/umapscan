@@ -241,7 +241,7 @@ map_plot <- function(us, point_labels = NULL, labels = TRUE) {
   ## Generate data for each clustering level
   levels <- purrr::map(1:max(us$clusters$level), function(level) {
 
-    clusters <- get_clusters_membership(us, max_level = level, labels = labels)
+    clusters <- clust_members(us, max_level = level, labels = labels)
     clusters[clusters == "<Noise>"] <- NA
     suppressWarnings({
       pal <- leaflet::colorFactor(
